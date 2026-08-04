@@ -1,0 +1,604 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{noah-common}[2026/08/04 v2.2 Shared infrastructure for my classes]
+
+\RequirePackage{iftex}
+\ifLuaTeX\else
+  \PackageError{noah-common}{The Noah classes require LuaLaTeX}{Compile with latexmk -lualatex.}
+\fi
+
+% ---------------------------------------------------------------------------
+% Language, page setup, and basic typography
+% ---------------------------------------------------------------------------
+\RequirePackage[\noah@language]{babel}
+\RequirePackage{geometry}
+\RequirePackage{mathtools}
+\RequirePackage{fontspec}
+\RequirePackage{unicode-math}
+\RequirePackage{microtype}
+\RequirePackage{setspace}
+\RequirePackage{titlecaps}
+\RequirePackage{etoolbox}
+
+\Addlcwords{a an the and but for or nor as at by in of on per to via vs off up out}
+
+\IfFontExistsTF{Libertinus Serif}
+  {\setmainfont{Libertinus Serif}}
+  {\setmainfont{Latin Modern Roman}}
+\IfFontExistsTF{Source Sans 3}
+  {\setsansfont{Source Sans 3}}
+  {\IfFontExistsTF{Source Sans Pro}
+     {\setsansfont{Source Sans Pro}}
+     {\setsansfont{Latin Modern Sans}}}
+\IfFontExistsTF{JuliaMono}
+  {\setmonofont{JuliaMono}}
+  {\IfFontExistsTF{Inconsolata}
+     {\setmonofont{Inconsolata}}
+     {\setmonofont{Latin Modern Mono}}}
+\IfFontExistsTF{Libertinus Math}
+  {\setmathfont{Libertinus Math}}
+  {\setmathfont{Latin Modern Math}}
+
+\setlength{\parindent}{0pt}
+
+% Libertinus/Latin Modern can look slightly tight immediately around text
+% delimiters. Add a very small optical gap without changing typed spaces.
+\SetExtraKerning
+  [name=noah-delimiters, unit=em]
+  {encoding={TU}}
+  {
+    ( = {45,},
+    ) = {,45},
+    [ = {45,},
+    ] = {,45}
+  }
+\microtypecontext{kerning=noah-delimiters}
+
+% Title-case only for English
+\newcommand{\NoahTitleCase}[1]{%
+  \ifnoah@danish #1\else \titlecap{#1}\fi
+}
+\newcommand{\ReportTitle}{\NoahTitleCase{\@title}}
+
+\ExplSyntaxOn
+\newcommand{\NoahStoreTitleCase}[2]{%
+  \ifnoah@danish
+    \global\def#1{#2}%
+  \else
+    \begingroup
+      \setbox0=\hbox{\titlecap{#2}\global\let\noah_titlecase_temp\@thestring}%
+      \cs_set:Npn \uppercase ##1 {\text_uppercase:n{##1}}%
+      \xdef#1{\noah_titlecase_temp}%
+    \endgroup
+  \fi
+}
+\ExplSyntaxOff
+
+% ---------------------------------------------------------------------------
+% Mathematics and units
+% ---------------------------------------------------------------------------
+\providecommand{\Vec}[1]{\symbfit{#1}}
+\renewcommand{\Vec}[1]{\symbfit{#1}}
+\newcommand{\Mat}[1]{\symbfup{#1}}
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+\DeclareMathOperator{\grad}{grad}
+
+\RequirePackage{siunitx}
+\ifnoah@danish
+  \sisetup{output-decimal-marker={,}}
+\else
+  \sisetup{output-decimal-marker={.}}
+\fi
+\sisetup{
+  exponent-product=\cdot,
+  group-separator={\,},
+  group-minimum-digits=5,
+  per-mode=fraction,
+  detect-all
+}
+
+% Inline alternatives using powers instead of fractions
+\NewDocumentCommand{\iqty}{O{}mm}{\qty[per-mode=power-positive-first,#1]{#2}{#3}}
+\NewDocumentCommand{\isi}{O{}m}{\si[per-mode=power-positive-first,#1]{#2}}
+
+% ---------------------------------------------------------------------------
+% Official AU palette
+% ---------------------------------------------------------------------------
+\RequirePackage{xcolor}
+\definecolor{AUblue}{RGB}{0,61,115}
+\definecolor{AUblueDark}{RGB}{0,37,70}
+\definecolor{AUpurple}{RGB}{101,90,159}
+\definecolor{AUpurpleDark}{RGB}{40,28,65}
+\definecolor{AUcyan}{RGB}{55,160,203}
+\definecolor{AUcyanDark}{RGB}{0,62,92}
+\definecolor{AUturquoise}{RGB}{0,171,164}
+\definecolor{AUturquoiseDark}{RGB}{0,69,67}
+\definecolor{AUgreen}{RGB}{139,173,63}
+\definecolor{AUgreenDark}{RGB}{66,88,33}
+\definecolor{AUyellow}{RGB}{250,187,0}
+\definecolor{AUyellowDark}{RGB}{99,75,3}
+\definecolor{AUorange}{RGB}{238,127,0}
+\definecolor{AUorangeDark}{RGB}{95,52,8}
+\definecolor{AUred}{RGB}{226,0,26}
+\definecolor{AUredDark}{RGB}{91,12,12}
+\definecolor{AUmagenta}{RGB}{226,0,122}
+\definecolor{AUmagentaDark}{RGB}{95,0,48}
+\definecolor{AUgray}{RGB}{135,135,135}
+\definecolor{NoahPaperGray}{RGB}{245,246,248}
+
+% ---------------------------------------------------------------------------
+% Figures, tables, captions, and lists
+% ---------------------------------------------------------------------------
+\RequirePackage[final]{graphicx}
+\graphicspath{{./figures/}}
+\RequirePackage{import}
+\RequirePackage{transparent}
+\RequirePackage{tabularx}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+
+\newcommand{\NoahConfigureListsAndCaptions}[3]{%
+  \setlist{%
+    topsep=#1,
+    itemsep=#2,
+    parsep=0pt,
+    leftmargin=*%
+  }%
+  \captionsetup{%
+    font=small,
+    labelfont=bf,
+    format=hang,
+    justification=raggedright,
+    singlelinecheck=#3%
+  }%
+}
+
+\newcommand{\incfig}[2][1]{%
+  \def\svgwidth{#1\columnwidth}%
+  \import{./figures/}{#2.pdf_tex}%
+}
+
+% ---------------------------------------------------------------------------
+% Metadata and authors
+% ---------------------------------------------------------------------------
+\ExplSyntaxOn
+\seq_new:N \g_noah_author_name_seq
+\seq_new:N \g_noah_author_id_seq
+\tl_new:N \g_noah_course_tl
+\tl_new:N \g_noah_course_code_tl
+\tl_new:N \g_noah_course_short_tl
+\tl_new:N \g_noah_running_title_tl
+\tl_new:N \g_noah_instructor_tl
+\tl_new:N \g_noah_semester_tl
+\tl_new:N \g_noah_department_tl
+\tl_new:N \g_noah_university_tl
+\tl_new:N \g_noah_logo_tl
+\tl_new:N \g_noah_pdf_subject_tl
+\tl_new:N \g_noah_date_iso_tl
+\tl_new:N \g_noah_submission_date_tl
+\tl_new:N \g_noah_submission_date_iso_tl
+\tl_new:N \g_noah_candidate_number_tl
+
+\cs_new:Npn \noah_two_digits:n #1
+  { \int_compare:nNnTF {#1} < {10} {0\int_to_arabic:n{#1}} {\int_to_arabic:n{#1}} }
+\tl_gset:Nx \g_noah_date_iso_tl
+  { \int_to_arabic:n{\year}-\noah_two_digits:n{\month}-\noah_two_digits:n{\day} }
+\tl_gset:Nn \g_noah_logo_tl {figures/AU.pdf}
+\ifnoah@danish
+  \tl_gset:Nn \g_noah_department_tl {Institut~for~Mekanik~og~Produktion}
+  \tl_gset:Nn \g_noah_university_tl {Aarhus~Universitet}
+\else
+  \tl_gset:Nn \g_noah_department_tl {Department~of~Mechanical~and~Production~Engineering}
+  \tl_gset:Nn \g_noah_university_tl {Aarhus~University}
+\fi
+
+\cs_new_protected:Npn \NoahDefaultAuthor #1#2
+  {
+    \seq_gclear:N \g_noah_author_name_seq
+    \seq_gclear:N \g_noah_author_id_seq
+    \seq_gput_right:Nn \g_noah_author_name_seq {#1}
+    \seq_gput_right:Nn \g_noah_author_id_seq {#2}
+  }
+\ExplSyntaxOff
+\InputIfFileExists{noah-private.cfg}{}{}
+\ExplSyntaxOn
+
+\cs_new_protected:Npn \noah_set_primary_name:n #1
+  {
+    \seq_if_empty:NTF \g_noah_author_name_seq
+      {
+        \seq_gput_right:Nn \g_noah_author_name_seq {#1}
+        \seq_gput_right:Nn \g_noah_author_id_seq {}
+      }
+      {\seq_gset_item:Nnn \g_noah_author_name_seq {1} {#1}}
+  }
+\cs_new_protected:Npn \noah_set_primary_id:n #1
+  {
+    \seq_if_empty:NTF \g_noah_author_id_seq
+      {
+        \seq_gput_right:Nn \g_noah_author_name_seq {}
+        \seq_gput_right:Nn \g_noah_author_id_seq {#1}
+      }
+      {\seq_gset_item:Nnn \g_noah_author_id_seq {1} {#1}}
+  }
+\RenewDocumentCommand{\author}{m}{\noah_set_primary_name:n{#1}\gdef\@author{#1}}
+\NewDocumentCommand{\studentid}{m}{\noah_set_primary_id:n{#1}}
+\NewDocumentCommand{\addauthor}{mm}
+  {
+    \seq_gput_right:Nn \g_noah_author_name_seq {#1}
+    \seq_gput_right:Nn \g_noah_author_id_seq {#2}
+  }
+
+\keys_define:nn {noah/setup}
+  {
+    course .tl_gset:N = \g_noah_course_tl,
+    course-code .tl_gset:N = \g_noah_course_code_tl,
+    course-short .tl_gset:N = \g_noah_course_short_tl,
+    short-course .meta:n = {course-short={#1}},
+    running-title .tl_gset:N = \g_noah_running_title_tl,
+    short-title .meta:n = {running-title={#1}},
+    instructor .tl_gset:N = \g_noah_instructor_tl,
+    semester .tl_gset:N = \g_noah_semester_tl,
+    department .tl_gset:N = \g_noah_department_tl,
+    university .tl_gset:N = \g_noah_university_tl,
+    logo .tl_gset:N = \g_noah_logo_tl,
+    pdf-subject .tl_gset:N = \g_noah_pdf_subject_tl,
+    document-date-iso .tl_gset:N = \g_noah_date_iso_tl,
+    submission-date .tl_gset:N = \g_noah_submission_date_tl,
+    submission-date-iso .tl_gset:N = \g_noah_submission_date_iso_tl,
+    candidate-number .tl_gset:N = \g_noah_candidate_number_tl,
+    toc-depth .code:n = {\setcounter{tocdepth}{#1}}
+  }
+\NewDocumentCommand{\documentsetup}{m}{\keys_set:nn{noah/setup}{#1}}
+\NewDocumentCommand{\candidatenumber}{m}{\tl_gset:Nn\g_noah_candidate_number_tl{#1}}
+
+\cs_new:Npn \NoahCourseName {\tl_use:N\g_noah_course_tl}
+\cs_new:Npn \NoahInstructor {\tl_use:N\g_noah_instructor_tl}
+\cs_new:Npn \NoahSemester {\tl_use:N\g_noah_semester_tl}
+\cs_new:Npn \NoahDepartment {\tl_use:N\g_noah_department_tl}
+\cs_new:Npn \NoahUniversity {\tl_use:N\g_noah_university_tl}
+\cs_new:Npn \NoahDateISO {\tl_use:N\g_noah_date_iso_tl}
+\cs_new:Npn \NoahLogoPath {\tl_use:N\g_noah_logo_tl}
+\cs_new:Npn \NoahSubmissionDate {\tl_use:N\g_noah_submission_date_tl}
+\cs_new:Npn \NoahSubmissionDateISO
+  {\tl_if_blank:VTF\g_noah_submission_date_iso_tl{\NoahDateISO}{\tl_use:N\g_noah_submission_date_iso_tl}}
+\cs_new:Npn \NoahCandidateNumber {\tl_use:N\g_noah_candidate_number_tl}
+
+\cs_new:Npn \NoahCourseCompact
+  {
+    \tl_use:N\g_noah_course_tl
+    \tl_if_blank:VF\g_noah_course_code_tl
+      {\c_space_tl(\tl_use:N\g_noah_course_code_tl)}
+  }
+\cs_new:Npn \NoahCourseRunning
+  {
+    \tl_if_blank:VTF \g_noah_course_short_tl
+      {
+        \tl_if_blank:VTF \g_noah_course_code_tl
+          {\tl_use:N \g_noah_course_tl}
+          {\tl_use:N \g_noah_course_code_tl}
+      }
+      {\tl_use:N \g_noah_course_short_tl}
+  }
+\cs_new:Npn \NoahCourseShortName
+  {
+    \tl_if_blank:VTF \g_noah_course_short_tl
+      {\tl_use:N \g_noah_course_tl}
+      {\tl_use:N \g_noah_course_short_tl}
+  }
+\cs_new:Npn \NoahRunningTitle
+  {
+    \tl_if_blank:VTF \g_noah_running_title_tl
+      {\ReportTitle}
+      {\tl_use:N \g_noah_running_title_tl}
+  }
+\cs_new_protected:Npn \NoahCourseTitle
+  {
+    \tl_if_blank:VTF \g_noah_course_code_tl
+      {\tl_use:N\g_noah_course_tl}
+      {
+        \begin{tabularx}{\linewidth}{@{}X>{\raggedleft\arraybackslash}l@{}}
+          \tl_use:N\g_noah_course_tl & \tl_use:N\g_noah_course_code_tl
+        \end{tabularx}
+      }
+  }
+
+\cs_new:Npn \NoahAuthorCount {\seq_count:N\g_noah_author_name_seq}
+\cs_new:Npn \NoahAuthorsFull {\seq_use:Nn\g_noah_author_name_seq{;\c_space_tl}}
+
+\seq_new:N \l_noah_surname_seq
+\cs_new_protected:Npn \noah_surname:n #1
+  {
+    \seq_set_split:Nnn \l_noah_surname_seq {~} {#1}
+    \seq_item:Nn \l_noah_surname_seq {-1}
+  }
+\cs_new:Npn \NoahAuthorSurnames
+  {
+    \seq_map_indexed_function:NN \g_noah_author_name_seq \noah_surname_join:nn
+  }
+
+\seq_new:N \l_noah_short_name_seq
+\cs_new_protected:Npn \noah_short_name:n #1
+  {
+    \seq_set_split:Nnn \l_noah_short_name_seq { ~ } {#1}
+    \int_set:Nn \l_tmpa_int {\seq_count:N\l_noah_short_name_seq}
+    \int_compare:nNnTF {\l_tmpa_int} < {3}
+      {#1}
+      {
+        \seq_item:Nn \l_noah_short_name_seq {1}
+        \int_step_inline:nnn {2} {\l_tmpa_int-1}
+          {
+            \c_space_tl
+            \exp_args:Ne \tl_head:n
+              {\seq_item:Nn \l_noah_short_name_seq {##1}}.
+          }
+        \c_space_tl\seq_item:Nn \l_noah_short_name_seq {-1}
+      }
+  }
+\cs_new_protected:Npn \NoahPrimaryAuthorShort
+  {
+    \seq_if_empty:NF \g_noah_author_name_seq
+      {
+        \exp_args:Ne \noah_short_name:n
+          {\seq_item:Nn \g_noah_author_name_seq {1}}
+      }
+  }
+\cs_new:Npn \noah_surname_join:nn #1#2
+  {
+    \int_compare:nNnF {#1} = {1} {,\c_space_tl}
+    \noah_surname:n{#2}
+  }
+
+\cs_new_protected:Npn \NoahAssignmentAuthorRows
+  {
+    \int_set:Nn \l_tmpa_int {\seq_count:N\g_noah_author_name_seq}
+    \seq_map_indexed_inline:Nn \g_noah_author_name_seq
+      {
+        \int_compare:nNnTF {##1} = {1}
+          {
+            \textbf{\sffamily
+              \int_compare:nNnTF {\l_tmpa_int} > {1}
+                {\NoahLabelAuthors}{\NoahLabelAuthor}} &
+          }
+          {&}
+        ##2\hfill\seq_item:Nn\g_noah_author_id_seq{##1}\\[1.5mm]
+      }
+  }
+\NewDocumentCommand{\NoahMetadataRow}{mm}
+  {\textbf{\sffamily #1} & #2\\[1mm]}
+\NewDocumentCommand{\NoahCourseMetadataRow}{}
+  {\tl_if_blank:VF\g_noah_course_tl{\textbf{\sffamily\NoahLabelCourse} & \NoahCourseTitle\\[1mm]}}
+\NewDocumentCommand{\NoahInstructorMetadataRow}{}
+  {\tl_if_blank:VF\g_noah_instructor_tl{\textbf{\sffamily\NoahLabelInstructor} & \NoahInstructor\\[1mm]}}
+\NewDocumentCommand{\NoahSemesterMetadataRow}{}
+  {\tl_if_blank:VF\g_noah_semester_tl{\textbf{\sffamily\NoahLabelSemester} & \NoahSemester\\[1mm]}}
+\NewDocumentCommand{\NoahSubmissionMetadataRow}{}
+  {\tl_if_blank:VF\g_noah_submission_date_tl{\textbf{\sffamily\NoahLabelSubmissionDate} & \NoahSubmissionDate\\[1mm]}}
+\NewDocumentCommand{\NoahCandidateMetadataRow}{}
+  {\tl_if_blank:VF\g_noah_candidate_number_tl{\textbf{\sffamily\NoahLabelCandidate} & \NoahCandidateNumber\\[1mm]}}
+\NewDocumentCommand{\NoahIfBlankTF}{mmm}
+  {\tl_if_blank:eTF{#1}{#2}{#3}}
+
+\cs_new_protected:Npn \NoahNotesAuthorRows
+  {
+    \int_set:Nn \l_tmpa_int {\seq_count:N\g_noah_author_name_seq}
+    \seq_map_indexed_inline:Nn \g_noah_author_name_seq
+      {
+        \int_compare:nNnTF {##1} = {1}
+          {
+            \textbf{\sffamily
+              \int_compare:nNnTF {\l_tmpa_int} > {1}
+                {\NoahLabelAuthors}{\NoahLabelAuthor}} &
+          }
+          {&}
+        ##2
+        \tl_if_blank:eF {\seq_item:Nn\g_noah_author_id_seq{##1}}
+          {\hfill\seq_item:Nn\g_noah_author_id_seq{##1}}
+        \\[1.5mm]
+      }
+  }
+\ExplSyntaxOff
+
+% Fallback if no private configuration was found.
+\AtBeginDocument{%
+  \ifnum\NoahAuthorCount=0
+    \PackageWarning{noah-common}{No author configured. Add noah-private.cfg or use \string\author}
+  \fi
+}
+
+% ---------------------------------------------------------------------------
+% Localised generated text
+% ---------------------------------------------------------------------------
+\ifnoah@danish
+  \newcommand{\NoahLabelAuthor}{Forfatter}
+  \newcommand{\NoahLabelAuthors}{Forfattere}
+  \newcommand{\NoahLabelStudentID}{Studienummer}
+  \newcommand{\NoahLabelCourse}{Kursus}
+  \newcommand{\NoahLabelInstructor}{Underviser}
+  \newcommand{\NoahLabelSemester}{Semester}
+  \newcommand{\NoahLabelDate}{Dato}
+  \newcommand{\NoahLabelSubmissionDate}{Afleveringsdato}
+  \newcommand{\NoahLabelCandidate}{Kandidatnummer}
+  \newcommand{\NoahLabelProblem}{Opgave}
+  \newcommand{\NoahLabelSubproblem}{Delopgave}
+  \newcommand{\NoahLabelExercise}{Øvelse}
+  \newcommand{\NoahLabelAssumptions}{Antagelser}
+  \newcommand{\NoahLabelGivens}{Givet}
+  \newcommand{\NoahLabelDerivation}{Udledning}
+  \newcommand{\NoahLabelResult}{Resultat}
+  \newcommand{\NoahLabelFinalResult}{Endeligt resultat}
+  \newcommand{\NoahLabelLecture}{Forelæsning}
+  \newcommand{\NoahLabelDefinition}{Definition}
+  \newcommand{\NoahLabelExample}{Eksempel}
+  \newcommand{\NoahLabelTheorem}{Sætning}
+  \newcommand{\NoahLabelProof}{Bevis}
+  \newcommand{\NoahPageAbbrev}{s.}
+  \newcommand{\NoahLabelOf}{af}
+  \newcommand{\NoahLabelAssignmentFor}{Opgave for}
+  \newcommand{\NoahLabelLectureNotesFor}{Forelæsningsnoter for}
+\else
+  \newcommand{\NoahLabelAuthor}{Author}
+  \newcommand{\NoahLabelAuthors}{Authors}
+  \newcommand{\NoahLabelStudentID}{Student ID}
+  \newcommand{\NoahLabelCourse}{Course}
+  \newcommand{\NoahLabelInstructor}{Instructor}
+  \newcommand{\NoahLabelSemester}{Semester}
+  \newcommand{\NoahLabelDate}{Date}
+  \newcommand{\NoahLabelSubmissionDate}{Submission date}
+  \newcommand{\NoahLabelCandidate}{Candidate number}
+  \newcommand{\NoahLabelProblem}{Problem}
+  \newcommand{\NoahLabelSubproblem}{Subproblem}
+  \newcommand{\NoahLabelExercise}{Exercise}
+  \newcommand{\NoahLabelAssumptions}{Assumptions}
+  \newcommand{\NoahLabelGivens}{Givens}
+  \newcommand{\NoahLabelDerivation}{Derivation}
+  \newcommand{\NoahLabelResult}{Result}
+  \newcommand{\NoahLabelFinalResult}{Final result}
+  \newcommand{\NoahLabelLecture}{Lecture}
+  \newcommand{\NoahLabelDefinition}{Definition}
+  \newcommand{\NoahLabelExample}{Example}
+  \newcommand{\NoahLabelTheorem}{Theorem}
+  \newcommand{\NoahLabelProof}{Proof}
+  \newcommand{\NoahPageAbbrev}{p.}
+  \newcommand{\NoahLabelOf}{of}
+  \newcommand{\NoahLabelAssignmentFor}{Assignment for}
+  \newcommand{\NoahLabelLectureNotesFor}{Lecture notes for}
+\fi
+
+% ---------------------------------------------------------------------------
+% Page styles, front matter, title-page helpers, and draft mode
+% ---------------------------------------------------------------------------
+\RequirePackage{fancyhdr}
+\RequirePackage{eso-pic}
+\newif\ifnoah@infrontmatter
+\newif\ifnoah@inmainmatter
+\noah@infrontmatterfalse
+\noah@inmainmatterfalse
+
+\providecommand{\frontmatter}{%
+  \clearpage
+  \global\noah@infrontmattertrue
+  \global\noah@inmainmatterfalse
+  \pagenumbering{roman}%
+}
+\providecommand{\mainmatter}{%
+  \clearpage
+  \global\noah@infrontmatterfalse
+  \global\noah@inmainmattertrue
+  \pagenumbering{arabic}%
+}
+
+\newcommand{\NoahTitleStripe}{%
+  \AddToShipoutPictureBG*{%
+    \AtPageLowerLeft{\color{AUblue}\rule{7mm}{\paperheight}}%
+  }%
+}
+\newcommand{\NoahIncludeLogo}[1]{%
+  \begingroup
+  \edef\NoahLogoFile{\NoahLogoPath}%
+  \IfFileExists{\NoahLogoFile}
+    {\includegraphics[width=#1]{\NoahLogoFile}}
+    {\PackageWarning{noah-common}{Logo file `\NoahLogoFile' not found; title page will omit it}}%
+  \endgroup
+}
+
+\ifnoah@draft
+  \overfullrule=5pt
+  \AddToShipoutPictureBG{%
+    \AtPageCenter{%
+      \makebox(0,0){\rotatebox{45}{\fontsize{58}{60}\selectfont\sffamily\bfseries\color{AUgray!20}DRAFT}}%
+    }%
+  }
+\fi
+
+% ---------------------------------------------------------------------------
+% Contents styling and automatic title casing for ordinary headings
+% ---------------------------------------------------------------------------
+\RequirePackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\Huge\bfseries\sffamily\color{AUblueDark}}
+\renewcommand{\cftaftertoctitle}{\vspace{1.5\baselineskip}}
+\renewcommand{\cftsecfont}{\bfseries\sffamily\color{AUblueDark}}
+\renewcommand{\cftsecpagefont}{\bfseries\sffamily\color{AUblueDark}}
+\renewcommand{\cftsubsecfont}{\sffamily\color{AUblue}}
+\renewcommand{\cftsubsecpagefont}{\sffamily\color{AUblue}}
+\renewcommand{\cftsubsubsecfont}{\sffamily\color{AUblueDark}}
+\renewcommand{\cftsubsubsecpagefont}{\sffamily\color{AUblueDark}}
+\renewcommand{\cftsecdotsep}{\cftdotsep}
+
+\newcommand{\NoahInstallTitleCasing}{%
+  \let\noah@original@section\section
+  \let\noah@original@subsection\subsection
+  \let\noah@original@subsubsection\subsubsection
+  \RenewDocumentCommand{\section}{s o m}{%
+    \IfBooleanTF{##1}
+      {\noah@original@section*{\NoahTitleCase{##3}}}
+      {\IfNoValueTF{##2}
+        {\noah@original@section{\NoahTitleCase{##3}}}
+        {\noah@original@section[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+  }%
+  \RenewDocumentCommand{\subsection}{s o m}{%
+    \IfBooleanTF{##1}
+      {\noah@original@subsection*{\NoahTitleCase{##3}}}
+      {\IfNoValueTF{##2}
+        {\noah@original@subsection{\NoahTitleCase{##3}}}
+        {\noah@original@subsection[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+  }%
+  \RenewDocumentCommand{\subsubsection}{s o m}{%
+    \IfBooleanTF{##1}
+      {\noah@original@subsubsection*{\NoahTitleCase{##3}}}
+      {\IfNoValueTF{##2}
+        {\noah@original@subsubsection{\NoahTitleCase{##3}}}
+        {\noah@original@subsubsection[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+  }%
+}
+
+% ---------------------------------------------------------------------------
+% Hyperlinks, PDF metadata, and references
+% ---------------------------------------------------------------------------
+\RequirePackage{hyperref}
+\RequirePackage{nameref}
+\RequirePackage{refcount}
+\ifnoah@print
+  \hypersetup{hidelinks}
+\fi
+\hypersetup{pdfcreator={LuaLaTeX with the Noah classes}}
+\pdfstringdefDisableCommands{\def\titlecap#1{#1}\def\uppercase#1{#1}}
+
+\RequirePackage[nameinlink,noabbrev]{cleveref}
+\ifnoah@danish
+  \crefname{equation}{ligning}{ligninger}
+  \Crefname{equation}{Ligning}{Ligninger}
+\fi
+
+\newcommand{\noah@namedref}[2]{%
+  \begingroup
+  \edef\noah@reftitle{\getrefbykeydefault{#2}{name}{}}%
+  \hyperref[#2]{#1\ifx\noah@reftitle\@empty\else: \noah@reftitle\fi}%
+  \endgroup
+}
+\newcommand{\mref}[1]{\noah@namedref{\cref*{#1}}{#1}}
+\newcommand{\Mref}[1]{\noah@namedref{\Cref*{#1}}{#1}}
+
+\ExplSyntaxOn
+\AtBeginDocument{%
+  \NoahStoreTitleCase{\noah@pdftitleplain}{\@title}%
+  \tl_set:Nx \l_tmpa_tl {\NoahAuthorsFull}
+  \tl_set:Nx \l_tmpb_tl {\tl_use:N\g_noah_pdf_subject_tl}
+  \tl_if_blank:VTF \l_tmpb_tl
+    {
+      \ifnoah@assignment
+        \tl_set:Nx \l_tmpb_tl {\NoahLabelAssignmentFor\c_space_tl\NoahCourseCompact}
+      \else
+        \tl_set:Nx \l_tmpb_tl {\NoahLabelLectureNotesFor\c_space_tl\NoahCourseCompact}
+      \fi
+    }{}
+  \ifnoah@anonymous
+    \hypersetup{pdftitle={\noah@pdftitleplain},pdfauthor={},pdfsubject={\l_tmpb_tl}}
+  \else
+    \hypersetup{pdftitle={\noah@pdftitleplain},pdfauthor={\l_tmpa_tl},pdfsubject={\l_tmpb_tl}}
+  \fi
+}
+\ExplSyntaxOff
