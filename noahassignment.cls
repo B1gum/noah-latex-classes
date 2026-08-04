@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{noahassignment}[2026/08/04 v2.2 My problem-sheet assignment class]
+\ProvidesClass{noahassignment}[2026/08/04 My problem-sheet assignment class]
 
 % ---------------------------------------------------------------------------
 % Options
@@ -312,14 +312,182 @@
   \end{center}
 }
 
-\newenvironment{derivation}[1][\NoahLabelDerivation]{%
-  \AUheading{#1}
-  \begingroup\allowdisplaybreaks
-  \setlength{\abovedisplayskip}{8pt}
-  \setlength{\belowdisplayskip}{8pt}
-  \setlength{\abovedisplayshortskip}{6pt}
-  \setlength{\belowdisplayshortskip}{6pt}
-}{\par\endgroup\medskip}
+% A derivation may be used either as a plain block (the legacy interface) or
+% as a list of derivation parts matching the problem's subproblem list.  The
+% parts use the same numbering scheme, indentation, and rhythm as subproblems.
+% Each subresult is shown in place and repeated in the collected final result.
+\ExplSyntaxOn
+\int_new:N  \g_noah_derivation_result_count_int
+\tl_new:N   \l_noah_derivation_current_ref_tl
+\tl_new:N   \l_noah_derivation_current_display_tl
+\bool_new:N \l_noah_derivation_parts_bool
+\bool_new:N \l_noah_derivation_part_has_result_bool
+\int_new:N  \l_noah_derivation_part_int
+
+\newlist{derivationparts}{enumerate}{1}
+\setlist[derivationparts,1]
+  {
+    leftmargin=10mm,
+    labelsep=3mm,
+    itemsep=10mm,
+    topsep=4pt,
+    parsep=0pt
+  }
+
+\cs_new_protected:Npn \noah_setup_derivation_numbering:
+  {
+    \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {letters}
+      {
+        \setlist[derivationparts,1]
+          {label=\textbf{(\alph*)},ref=\theproblem(\alph*)}
+      }
+      {
+        \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {decimal}
+          {
+            \setlist[derivationparts,1]
+              {label=\textbf{\theproblem.\arabic*},ref=\theproblem.\arabic*}
+          }
+          {
+            \setlist[derivationparts,1]
+              {label=\textbf{\theproblem\alph*},ref=\theproblem\alph*}
+          }
+      }
+  }
+\AtBeginDocument{\noah_setup_derivation_numbering:}
+
+\cs_new:Npn \noah_derivation_local_label:
+  {
+    \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {letters}
+      {(\int_to_alph:n {\l_noah_derivation_part_int})}
+      {
+        \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {decimal}
+          {\theproblem.\int_to_arabic:n {\l_noah_derivation_part_int}}
+          {\theproblem\int_to_alph:n {\l_noah_derivation_part_int}}
+      }
+  }
+
+\cs_new:Npn \noah_derivation_index_label:n #1
+  {
+    \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {letters}
+      {(\int_to_alph:n {#1})}
+      {
+        \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {decimal}
+          {\theproblem.\int_to_arabic:n {#1}}
+          {\theproblem\int_to_alph:n {#1}}
+      }
+  }
+
+\cs_new:Npn \noah_derivation_part_heading:
+  {\tl_use:N \l_noah_derivation_current_display_tl}
+
+\cs_new_protected:Npn \noah_derivation_summary_entry:nnn #1#2#3
+  {
+    \par\noindent
+    \makebox[10mm][l]
+      {\sffamily\bfseries\color{AUblueDark}#2}%
+    \begin{minipage}[t]{\dimexpr\linewidth-10mm\relax}
+      #3
+    \end{minipage}
+    \par
+  }
+
+\cs_new_protected:Npn \noah_derivation_begin:n #1
+  {
+    \par\vspace{0.85\baselineskip}
+    {\Large\bfseries\sffamily\color{AUblueDark}#1\par}
+    \vspace{0.35\baselineskip}
+    \begingroup
+    \allowdisplaybreaks
+    \setlength{\abovedisplayskip}{8pt}
+    \setlength{\belowdisplayskip}{8pt}
+    \setlength{\abovedisplayshortskip}{6pt}
+    \setlength{\belowdisplayshortskip}{6pt}
+    \int_gzero:N \g_noah_derivation_result_count_int
+    \tl_clear:N \l_noah_derivation_current_ref_tl
+    \tl_clear:N \l_noah_derivation_current_display_tl
+    \bool_set_false:N \l_noah_derivation_parts_bool
+    \bool_gset_false:N \l_noah_derivation_part_has_result_bool
+  }
+
+\cs_new_protected:Npn \noah_derivation_end:
+  {
+    \bool_if:NT \l_noah_derivation_parts_bool
+      {
+        \bool_if:NF \l_noah_derivation_part_has_result_bool
+          {\ClassWarning{noahassignment}{The final derivation part has no subresult}}
+        \end{derivationparts}
+        \par\vspace{0.55\baselineskip}
+        {\color{AUblueDark}\rule{\linewidth}{0.8pt}}
+        \par\vspace{0.7\baselineskip}
+        \int_compare:nNnT {\g_noah_derivation_result_count_int} > {0}
+          {
+            \begin{finalresult}[title={\NoahLabelFinalResult\space--\space
+              \NoahLabelProblem\space\theproblem}]
+              \int_step_inline:nn {\g_noah_derivation_result_count_int}
+                {
+                  \int_compare:nNnT {##1} > {1}
+                    {\par\medskip{\color{AUblue!35}\hrule height 0.5pt}\medskip}
+                  \noah_derivation_summary_entry:nnn
+                    {}
+                    {\noah_derivation_index_label:n {##1}}
+                    {\tl_use:c {g_noah_derivation_body_##1_tl}}
+                }
+            \end{finalresult}
+          }
+        \int_gzero:N \g_noah_derivation_result_count_int
+        \bool_gset_false:N \l_noah_derivation_part_has_result_bool
+      }
+    \par\endgroup\medskip
+  }
+
+\NewDocumentEnvironment{derivation}{O{\NoahLabelDerivation}}
+  {\noah_derivation_begin:n{#1}}
+  {\noah_derivation_end:}
+
+% Optional argument links the part to the corresponding subproblem label.
+% The displayed marker is generated exactly like the original subproblem list.
+\NewDocumentCommand{\derivationpart}{o}
+  {
+    \bool_if:NTF \l_noah_derivation_parts_bool
+      {
+        \bool_if:NF \l_noah_derivation_part_has_result_bool
+          {\ClassWarning{noahassignment}{The preceding derivation part has no subresult}}
+      }
+      {
+        \bool_set_true:N \l_noah_derivation_parts_bool
+        \begin{derivationparts}
+      }
+    \item
+    \int_set:Nn \l_noah_derivation_part_int {\value{derivationpartsi}}
+    \tl_set:Nx \l_noah_derivation_current_display_tl
+      {\noah_derivation_local_label:}
+    \IfNoValueTF{#1}
+      {\tl_clear:N \l_noah_derivation_current_ref_tl}
+      {\tl_set:Nn \l_noah_derivation_current_ref_tl {#1}}
+    \bool_gset_false:N \l_noah_derivation_part_has_result_bool
+  }
+
+\NewDocumentEnvironment{subresult}{+b}
+  {
+    \bool_if:NTF \l_noah_derivation_parts_bool
+      {
+        \begin{result}
+          #1
+        \end{result}
+        \int_gincr:N \g_noah_derivation_result_count_int
+        \tl_gset:cn
+          {g_noah_derivation_body_\int_use:N\g_noah_derivation_result_count_int _tl}
+          {#1}
+        \bool_gset_true:N \l_noah_derivation_part_has_result_bool
+      }
+      {
+        \ClassError{noahassignment}
+          {subresult requires a derivationpart}
+          {Use subresult only after \string\derivationpart\space inside derivation.}
+      }
+  }
+  {}
+\ExplSyntaxOff
 
 \NewDocumentCommand{\exercise}{m}{%
   \par\vspace{0.85\baselineskip}
@@ -330,20 +498,22 @@
 % ---------------------------------------------------------------------------
 % Two-level result family 2
 % ---------------------------------------------------------------------------
-\newtcolorbox{result}{%
+\newtcolorbox{result}[1][]{%
   enhanced,sharp corners,breakable,frame hidden,boxrule=0pt,
   borderline west={2pt}{0pt}{AUblue},colback=white,
   left=10pt,right=4pt,top=5pt,bottom=5pt,
   before skip=7pt,after skip=7pt,
-  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelResult
+  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelResult,
+  #1
 }
-\newtcolorbox{finalresult}{%
+\newtcolorbox{finalresult}[1][]{%
   enhanced,sharp corners,breakable,frame hidden,boxrule=0pt,
   borderline west={4pt}{0pt}{AUblueDark},colback=AUblue!5,
   colbacktitle=AUblue!5,coltitle=AUblueDark,
   left=12pt,right=9pt,top=8pt,bottom=8pt,
   before skip=9pt,after skip=9pt,
-  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelFinalResult
+  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelFinalResult,
+  #1
 }
 
 % ---------------------------------------------------------------------------

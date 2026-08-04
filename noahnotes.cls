@@ -1,5 +1,5 @@
-\NeedsTeXFormat{LaTeX2e}[2022-06-01]
-\ProvidesClass{noahnotes}[2026/08/04 v2.2 Noah's lecture-notes class]
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesClass{noahnotes}[2026/08/04 Noah's lecture-notes class]
 
 % ---------------------------------------------------------------------------
 % Deliberately small, curated option surface
