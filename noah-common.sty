@@ -156,9 +156,14 @@
   }%
 }
 
-\newcommand{\incfig}[2][1]{%
-  \def\svgwidth{#1\columnwidth}%
-  \import{./figures/}{#2.pdf_tex}%
+\NewDocumentCommand{\incfig}{O{1} m o}{%
+  \begingroup
+    \def\svgwidth{#1\columnwidth}%
+    \import{./figures/}{#2.pdf_tex}%
+  \endgroup
+  \IfValueT{#3}{%
+    \caption{#3}%
+  }%
 }
 
 % ---------------------------------------------------------------------------
