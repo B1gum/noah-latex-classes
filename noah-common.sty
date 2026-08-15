@@ -21,14 +21,39 @@
 
 \Addlcwords{a an the and but for or nor as at by in of on per to via vs off up out}
 
-\IfFontExistsTF{Libertinus Serif}
-  {\setmainfont{Libertinus Serif}}
+% Final typography stack:
+%   body     = New Computer Modern Book
+%   headings = Libertinus Sans
+%   math     = Libertinus Math
+% Libertinus Math does not contain U+22BA (\intercal), so that one symbol is
+% taken from STIX Two Math when available.
+\IfFontExistsTF{NewCM10-Book.otf}
+  {\setmainfont{NewCM10-Book.otf}[
+     % NewCM's shipped fontspec config leaves an 8--9 pt gap. Keep its
+     % intended optical sizing while covering that interval continuously.
+     SizeFeatures={
+       {Size=-9,
+        Font=NewCM08-Book.otf,
+        ItalicFont=NewCM08-BookItalic.otf,
+        BoldFont=NewCM10-Bold.otf,
+        BoldItalicFont=NewCM10-BoldItalic.otf,
+        SmallCapsFeatures={Numbers=OldStyle}},
+       {Size=9-,
+        Font=NewCM10-Book.otf,
+        ItalicFont=NewCM10-BookItalic.otf,
+        BoldFont=NewCM10-Bold.otf,
+        BoldItalicFont=NewCM10-BoldItalic.otf,
+        SmallCapsFeatures={Numbers=OldStyle}}
+     },
+     ItalicFont=NewCM10-BookItalic.otf,
+     BoldFont=NewCM10-Bold.otf,
+     BoldItalicFont=NewCM10-BoldItalic.otf,
+     SmallCapsFeatures={Numbers=OldStyle}
+   ]}
   {\setmainfont{Latin Modern Roman}}
-\IfFontExistsTF{Source Sans 3}
-  {\setsansfont{Source Sans 3}}
-  {\IfFontExistsTF{Source Sans Pro}
-     {\setsansfont{Source Sans Pro}}
-     {\setsansfont{Latin Modern Sans}}}
+\IfFontExistsTF{Libertinus Sans}
+  {\setsansfont{Libertinus Sans}}
+  {\setsansfont{Latin Modern Sans}}
 \IfFontExistsTF{JuliaMono}
   {\setmonofont{JuliaMono}}
   {\IfFontExistsTF{Inconsolata}
@@ -37,10 +62,13 @@
 \IfFontExistsTF{Libertinus Math}
   {\setmathfont{Libertinus Math}}
   {\setmathfont{Latin Modern Math}}
+\IfFontExistsTF{STIX Two Math}
+  {\setmathfont{STIX Two Math}[range=\intercal]}
+  {}
 
 \setlength{\parindent}{0pt}
 
-% Libertinus/Latin Modern can look slightly tight immediately around text
+% The selected text/math faces can look slightly tight immediately around text
 % delimiters. Add a very small optical gap without changing typed spaces.
 \SetExtraKerning
   [name=noah-delimiters, unit=em]

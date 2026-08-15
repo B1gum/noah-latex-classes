@@ -69,12 +69,13 @@ The shared package selects the first available font in each row:
 
 | Role | Preferred | First fallback | Final fallback |
 |---|---|---|---|
-| Serif text | Libertinus Serif | — | Latin Modern Roman |
-| Sans serif | Source Sans 3 | Source Sans Pro | Latin Modern Sans |
+| Serif text | New Computer Modern Book (`NewCM10-Book`) | — | Latin Modern Roman |
+| Sans serif | Libertinus Sans | — | Latin Modern Sans |
 | Monospace | JuliaMono | Inconsolata | Latin Modern Mono |
 | Mathematics | Libertinus Math | — | Latin Modern Math |
+| `\intercal` only | STIX Two Math | Libertinus Math / active math fallback | — |
 
-The documents therefore compile without the preferred fonts, but their appearance may differ.
+New Computer Modern Book is wired explicitly to its Book Italic, Bold, and Bold Italic faces. Libertinus Math remains the math font; STIX Two Math supplies only the missing `\intercal` glyph when it is available. The documents still compile with the listed fallbacks, but their appearance may differ.
 
 ### Project-local installation
 
