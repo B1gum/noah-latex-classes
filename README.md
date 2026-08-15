@@ -1090,6 +1090,27 @@ Definition 2.1: Controllability
 
 Use `\mref` for lower-case reference names and `\Mref` at the start of a sentence. These commands create one hyperlink containing both number and title.
 
+BibLaTeX is loaded centrally by `noah-common.sty`. Add the bibliography file in the document itself, for example:
+
+```tex
+\addbibresource{../references/references.bib}
+```
+
+Use normal BibLaTeX citation commands for ordinary references:
+
+```tex
+\cite{johnson1985contactmechanics}
+```
+
+For a page-specific citation, use the class helper:
+
+```tex
+\citepage{johnson1985contactmechanics}{42}
+\citepage{johnson1985contactmechanics}{42--45}
+```
+
+`\citepage` delegates the page or page range to BibLaTeX as a postnote, so the active citation style, language localisation, hyperlink settings, and print/screen colour mode remain authoritative.
+
 For named formal boxes, place the label after the environment begins:
 
 ```tex
