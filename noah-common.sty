@@ -591,7 +591,15 @@
 % ---------------------------------------------------------------------------
 % Hyperlinks, PDF metadata, and references
 % ---------------------------------------------------------------------------
-\RequirePackage[backend=biber]{biblatex}
+\RequirePackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt
+]{biblatex}
+
+\newcommand{\citepage}[2]{\parencite[#2]{#1}}
+\newcommand{\textcitepage}[2]{\textcite[#2]{#1}}
+
 \RequirePackage{hyperref}
 \RequirePackage{nameref}
 \RequirePackage{refcount}
@@ -615,7 +623,6 @@
 }
 \newcommand{\mref}[1]{\noah@namedref{\cref*{#1}}{#1}}
 \newcommand{\Mref}[1]{\noah@namedref{\Cref*{#1}}{#1}}
-\NewDocumentCommand{\citepage}{m m}{\cite[#2]{#1}}
 
 \ExplSyntaxOn
 \AtBeginDocument{%
