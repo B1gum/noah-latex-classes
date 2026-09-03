@@ -186,6 +186,60 @@
 }
 
 % ---------------------------------------------------------------------------
+% Lecture dividers
+% ---------------------------------------------------------------------------
+% Keep the same interface as noahnotes so the `lec` LuaSnip expansion works in
+% either class: \lecture[short title]{identifier}{date}{title}.  Assignments do
+% not use the optional short title in a running header, but accept it for full
+% source compatibility.
+\newif\ifnoah@assignmentlecturepending
+\noah@assignmentlecturependingfalse
+
+\newcommand*\l@lecture[2]{%
+  \ifnum\c@tocdepth>\z@
+    \addpenalty\@secpenalty
+    \addvspace{0.85\baselineskip plus 1pt}%
+    \begingroup
+      \leftskip\z@
+      \rightskip\@tocrmarg
+      \parfillskip-\rightskip
+      \parindent\z@
+      \interlinepenalty\@M
+      \leavevmode
+      {\large\sffamily\color{black}#1}%
+      \nobreak\hfill\nobreak
+      \hb@xt@\@pnumwidth{\hss\normalfont\normalsize\sffamily\color{black}#2}%
+      \par
+    \endgroup
+  \fi
+}
+\def\toclevel@lecture{1}
+
+\NewDocumentCommand{\lecture}{O{} m m m}{%
+  % Assignment problems normally begin on fresh pages. Start the lecture on
+  % that fresh page here, then suppress only the first problem's own clearpage.
+  \clearpage
+  \protected@edef\thelecture{#2}% manual visible identifier
+  \refstepcounter{lecture}% unique hyperlink anchor + cleveref state
+  \NoahStoreTitleCase{\noah@lecturetitle}{#4}%
+  \protected@edef\@currentlabelname{\noah@lecturetitle}%
+  \ifstrempty{#4}
+    {\gdef\noah@lectureheading{\NoahLabelLecture~#2}}
+    {\protected@xdef\noah@lectureheading{\NoahLabelLecture~#2: \noah@lecturetitle}}%
+  \global\noah@assignmentlecturependingtrue
+  \par\vspace{0.8\baselineskip}
+  \noindent
+  \begin{minipage}[t]{0.78\linewidth}
+    \raggedright\normalsize\sffamily\color{black}\noah@lectureheading
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.18\linewidth}
+    \raggedleft\small\sffamily\color{AUblue}#3
+  \end{minipage}%
+  \par\vspace{0.2\baselineskip}
+  \addcontentsline{toc}{lecture}{\noah@lectureheading}%
+}
+
+% ---------------------------------------------------------------------------
 % Problem and subproblem hierarchy
 % ---------------------------------------------------------------------------
 \newcounter{problem}
@@ -210,7 +264,11 @@
 
 \cs_new_protected:Npn \noah_problem_begin:nn #1#2
   {
-    \clearpage
+    \ifnoah@assignmentlecturepending
+      \global\noah@assignmentlecturependingfalse
+    \else
+      \clearpage
+    \fi
     \ifnoah@assignmentresetpending
       \pagenumbering{arabic}
       \global\noah@assignmentresetpendingfalse

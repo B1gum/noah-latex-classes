@@ -191,15 +191,6 @@
 % ---------------------------------------------------------------------------
 % Manual lecture identifiers and custom contents entries
 % ---------------------------------------------------------------------------
-\newcounter{lecture}
-\ifnoah@danish
-  \crefname{lecture}{forelæsning}{forelæsninger}
-  \Crefname{lecture}{Forelæsning}{Forelæsninger}
-\else
-  \crefname{lecture}{lecture}{lectures}
-  \Crefname{lecture}{Lecture}{Lectures}
-\fi
-
 \newcommand*\l@lecture[2]{%
   \ifnum\c@tocdepth>\z@
     \addpenalty\@secpenalty
@@ -222,8 +213,8 @@
 
 % Optional short navigation title retained for custom page styles
 \NewDocumentCommand{\lecture}{O{} m m m}{%
-  \refstepcounter{lecture}% unique hyperlink anchor
-  \protected@edef\@currentlabel{#2}% manual visible identifier
+  \protected@edef\thelecture{#2}% manual visible identifier
+  \refstepcounter{lecture}% unique hyperlink anchor + cleveref state
   \NoahStoreTitleCase{\noah@lecturetitle}{#4}%
   \ifstrempty{#1}
     {\let\noah@lectureshort\noah@lecturetitle}
