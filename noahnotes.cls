@@ -40,7 +40,7 @@
 
 \setstretch{1.15}
 
-\setlength{\parskip}{0.48\baselineskip plus 1pt minus 1pt}
+\setlength{\parskip}{0.25\baselineskip plus 0.5pt minus 0.5pt}
 
 % Captions
 \NoahConfigureListsAndCaptions{3pt}{1.5pt}{false}
@@ -64,9 +64,9 @@
 \titleformat{\subsubsection}
   {\normalsize\bfseries\sffamily\color{AUblueDark}}
   {\thesubsubsection}{0.55em}{}
-\titlespacing*{\section}{0pt}{1.25\baselineskip}{0.4\baselineskip}
-\titlespacing*{\subsection}{0pt}{0.9\baselineskip}{0.25\baselineskip}
-\titlespacing*{\subsubsection}{0pt}{0.7\baselineskip}{0.15\baselineskip}
+\titlespacing*{\section}{0pt}{0.9\baselineskip}{0.3\baselineskip}
+\titlespacing*{\subsection}{0pt}{0.65\baselineskip}{0.2\baselineskip}
+\titlespacing*{\subsubsection}{0pt}{0.5\baselineskip}{0.15\baselineskip}
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{2}
 \NoahInstallTitleCasing

@@ -113,7 +113,9 @@
 
 \RequirePackage{siunitx}
 \ifnoah@danish
-  \sisetup{output-decimal-marker={,}}
+  \sisetup{
+    output-decimal-marker={,}
+  }
 \else
   \sisetup{output-decimal-marker={.}}
 \fi
@@ -122,6 +124,8 @@
   group-separator={\,},
   group-minimum-digits=5,
   per-mode=fraction,
+  range-phrase={--},
+  range-units=single,
   detect-all
 }
 
@@ -592,11 +596,65 @@
 % ---------------------------------------------------------------------------
 % Hyperlinks, PDF metadata, and references
 % ---------------------------------------------------------------------------
+\RequirePackage{csquotes}
+
 \RequirePackage[
   backend=biber,
   style=authoryear,
   sorting=nyt
 ]{biblatex}
+
+% Make the complete citation label + year one hyperlink.
+% This mirrors biblatex's authoryear cite macro, but moves the
+% hyperlink around the complete citation instead of only the year.
+\renewbibmacro*{cite}{%
+  \printtext[bibhyperref]{%
+    \iffieldundef{shorthand}
+      {%
+        \ifboolexpr{
+          test {\ifnameundef{labelname}}
+          or
+          test {\iffieldundef{labelyear}}
+        }
+          {%
+            \iffieldundef{label}
+              {\printfield[citetitle]{labeltitle}}
+              {\printfield{label}}%
+            \setunit{\printdelim{nonameyeardelim}}%
+          }
+          {%
+            \printnames{labelname}%
+            \setunit{\printdelim{nameyeardelim}}%
+          }%
+        \iffieldundef{labelyear}
+          {}
+          {\printlabeldateextra}%
+      }
+      {\printfield{shorthand}}%
+  }%
+}
+
+% Better BibLaTeX exports Zotero statutes and bills as @legislation,
+% for which the standard authoryear bibliography style has no driver.
+\DeclareBibliographyDriver{legislation}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{title}%
+  \newunit\newblock
+  \printfield{journaltitle}%
+  \setunit*{\addspace}%
+  \printfield{number}%
+  \newunit\newblock
+  \printfield{pages}%
+  \newunit\newblock
+  \usebibmacro{date}%
+  \newunit\newblock
+  \usebibmacro{url+urldate}%
+  \usebibmacro{finentry}%
+}
+
+% \cite is intentionally synonymous with \parencite
+\let\cite\parencite
 
 \newcommand{\citepage}[2]{\parencite[#2]{#1}}
 \newcommand{\textcitepage}[2]{\textcite[#2]{#1}}
