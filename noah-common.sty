@@ -82,7 +82,7 @@
 \microtypecontext{kerning=noah-delimiters}
 
 % Title-case only for English
-\newcommand{\NoahTitleCase}[1]{%
+\DeclareRobustCommand{\NoahTitleCase}[1]{%
   \ifnoah@danish #1\else \titlecap{#1}\fi
 }
 \newcommand{\ReportTitle}{\NoahTitleCase{\@title}}
@@ -703,7 +703,7 @@
     or test {\ifdefstring{\noah@reftype}{paragraph}}
     or test {\ifdefstring{\noah@reftype}{subparagraph}}
   }{%
-    \edef\noah@reftitle{\getrefbykeydefault{#2}{name}{}}%
+    \protected@edef\noah@reftitle{\getrefbykeydefault{#2}{name}{}}%
     \hyperref[#2]{%
       #1%
       \ifx\noah@reftitle\@empty

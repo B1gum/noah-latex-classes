@@ -570,7 +570,7 @@
   colbacktitle=AUblue!5,coltitle=AUblueDark,
   left=12pt,right=9pt,top=8pt,bottom=8pt,
   before skip=9pt,after skip=9pt,
-  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelFinalResult,
+  fonttitle=\bfseries\sffamily\color{AUblueDark},title=\NoahLabelFinalResult\space--\space\NoahLabelProblem\space\theproblem,
   #1
 }
 
