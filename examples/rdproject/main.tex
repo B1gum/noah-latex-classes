@@ -1,0 +1,116 @@
+\documentclass[screen,oneside]{rdproject}
+
+\begin{filecontents*}[overwrite]{references.bib}
+@standard{iso1926,
+  title     = {Rigid Cellular Plastics: Determination of Tensile Properties},
+  number    = {ISO 1926:2009},
+  publisher = {International Organization for Standardization},
+  location  = {Geneva, Switzerland},
+  date      = {2009}
+}
+\end{filecontents*}
+
+\addbibresource{references.bib}
+
+\title{Engineering Project Report}
+\author{Example Student}
+\studentid{202600001}
+\addauthor{Second Student}{202600002}
+
+\documentsetup{
+  course={Research and Development Project},
+  course-code={MECH-501},
+  course-short={R\&D Project},
+  running-title={Engineering Project Report},
+  semester={Autumn 2026},
+  supervisor={Example Supervisor},
+  submission-date={8 October 2026},
+  submission-date-iso={2026-10-08},
+  logo={../../figures/AU.pdf}
+}
+
+\newglossaryentry{E}{
+  name={\ensuremath{E}},
+  description={Young's modulus},
+  unit={\si{\pascal}},
+  sort={A-E}
+}
+\newglossaryentry{rho}{
+  name={\ensuremath{\rho}},
+  description={Density},
+  unit={\si{\kilogram\per\meter\cubed}},
+  sort={B-rho}
+}
+\newglossaryentry{fem}{
+  name={FEM},
+  description={Finite element method},
+  unit={},
+  sort={D-FEM}
+}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\begin{abstract}
+This example demonstrates the public structure and formatting provided by the
+\texttt{rdproject} class.
+\end{abstract}
+
+\begin{preface}
+The report class provides project metadata, front matter, nomenclature,
+IEEE-style references, appendices, and project-specific running headers.
+\end{preface}
+
+\tableofcontents
+\glsaddall
+\printglossary[style=NoahNomenclature,title={Nomenclature}]
+\printlistoffigures
+\printlistoftables
+
+\mainmatter
+
+\chapter{Introduction}
+The project follows the tensile-testing terminology of \cite{iso1926}.
+The symbol \gls{E} denotes Young's modulus and \gls{rho} denotes density.
+
+\section{Example equation}
+A simple constitutive relation is
+\begin{equation}
+  \sigma = E\varepsilon.
+  \label{eq:hooke}
+\end{equation}
+As shown in \Mref{eq:hooke}, stress is proportional to strain in this idealised
+linear-elastic example.
+
+\section{Example figure and table}
+\begin{figure}[htbp]
+  \centering
+  \fbox{\rule{0pt}{35mm}\rule{0.65\linewidth}{0pt}}
+  \caption{Placeholder project figure.}
+  \label{fig:placeholder}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Example material properties.}
+  \label{tab:properties}
+  \begin{tabular}{lcc}
+    \toprule
+    Material & \(E\) & \(\rho\) \\
+    \midrule
+    Example A & \qty{2.0}{\giga\pascal} & \qty{100}{\kilogram\per\meter\cubed} \\
+    Example B & \qty{3.0}{\giga\pascal} & \qty{120}{\kilogram\per\meter\cubed} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\appendix
+\chapter{Additional Derivation}\label{app:derivation}
+This appendix demonstrates appendix-aware cross-references.
+
+\backmatter
+\printreferences
+
+\end{document}

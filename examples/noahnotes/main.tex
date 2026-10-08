@@ -1,0 +1,72 @@
+\documentclass[english,screen,twoside]{noahnotes}
+
+\begin{filecontents*}[overwrite]{references.bib}
+@book{ogata2010,
+  author    = {Katsuhiko Ogata},
+  title     = {Modern Control Engineering},
+  edition   = {5},
+  publisher = {Prentice Hall},
+  date      = {2010}
+}
+\end{filecontents*}
+
+\addbibresource{references.bib}
+
+\title{Control Systems Notes}
+\author{Example Student}
+\studentid{202600001}
+\date{8 October 2026}
+
+\documentsetup{
+  course={Advanced Control Systems},
+  course-code={MECH-500},
+  course-short={Control},
+  instructor={Ada Lovelace},
+  semester={Autumn 2026},
+  logo={../../figures/AU.pdf},
+  toc-depth=2
+}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+
+\lecture[State models]{1}{8 October 2026}{State-space models}
+\label{lec:state-models}
+
+\section{Definitions and notation}
+
+Let \(\Vec{x}\) denote the state vector and \(\Mat{A}\) the state matrix.
+A standard introduction is given by \textcite{ogata2010}.
+
+\begin{definition}[State]\label{def:state}
+The state is the smallest collection of variables that determines the future
+behaviour of a system when its future input is known.
+\end{definition}
+
+\begin{example}[Second-order system]\label{ex:second-order}
+A linear state-space model may be written as
+\[
+  \dot{\Vec{x}} = \Mat{A}\Vec{x} + \Mat{B}\Vec{u}.
+\]
+\end{example}
+
+\begin{theorem}[State-transition matrix]\label{thm:stm}
+For a continuous matrix \(\Mat{A}(t)\), a state-transition matrix exists.
+
+\proofpart
+This follows from existence and uniqueness for linear ordinary differential
+equations.
+\end{theorem}
+
+As stated in \Mref{def:state}, the selected variables must determine the
+future response. See also \cref{thm:stm}.
+
+\backmatter
+\printbibliography[heading=bibintoc,title={References}]
+
+\end{document}

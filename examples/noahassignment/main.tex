@@ -1,0 +1,76 @@
+\documentclass[english,screen,final]{noahassignment}
+
+\title{Assignment 2: Mechanical Vibrations}
+\author{Example Student}
+\studentid{202600001}
+
+\documentsetup{
+  course={Mechanical Vibrations},
+  course-code={MECH-402},
+  course-short={Vibrations},
+  running-title={Assignment 2},
+  instructor={Grace Hopper},
+  semester={Autumn 2026},
+  submission-date={15 October 2026},
+  submission-date-iso={2026-10-15},
+  logo={../../figures/AU.pdf},
+  problem-numbering=automatic,
+  subproblem-numbering=letters,
+  toc-subproblems=true
+}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+
+\lecture[Vibrations]{1}{8 October 2026}{Single-degree-of-freedom vibration}
+
+\begin{problem}\label{prob:oscillator}
+A mass \(m\) is connected to a linear spring with stiffness \(k\).
+Neglect damping.
+
+\begin{subproblems}
+  \subproblem Derive the governing equation.\label{prob:oscillator:equation}
+  \subproblem Determine the natural frequency.\label{prob:oscillator:frequency}
+\end{subproblems}
+\end{problem}
+
+\begin{assumptions}
+  \item The spring is linear.
+  \item Motion is one-dimensional.
+\end{assumptions}
+
+\begin{givens}
+  m & \qty{2}{\kilogram} \\
+  k & \qty{18}{\newton\per\meter}
+\end{givens}
+
+\begin{derivation}
+  \derivationpart[prob:oscillator:equation]
+  Newton's second law gives
+  \[
+    m\ddot{x}+kx=0.
+  \]
+  \begin{subresult}
+    \[
+      m\ddot{x}+kx=0
+    \]
+  \end{subresult}
+
+  \derivationpart[prob:oscillator:frequency]
+  Comparing with the standard oscillator equation gives
+  \[
+    \omega_n^2=\frac{k}{m}.
+  \]
+  \begin{subresult}
+    \[
+      \omega_n=\sqrt{\frac{k}{m}}=\qty{3}{\radian\per\second}
+    \]
+  \end{subresult}
+\end{derivation}
+
+\end{document}

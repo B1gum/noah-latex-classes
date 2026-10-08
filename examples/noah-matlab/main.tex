@@ -1,0 +1,52 @@
+\documentclass{article}
+
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage{amsmath}
+\usepackage{noah-matlab}
+
+\title{Noah MATLAB Example}
+\author{Example Student}
+\date{8 October 2026}
+
+\matlabmultipletitles
+\matlabhastoc
+
+\begin{document}
+
+\maketitle
+\matlabtableofcontents{Contents}
+
+\matlabtitle{Transient heat transfer}
+\matlabheading{Input data}
+
+\begin{matlabcode}
+h = 20;                  % W/(m^2 K)
+k = [0.042 0.032 0.040];
+rho = [85 80 200];       % kg/m^3
+Bi = h .* 0.005 ./ k;
+\end{matlabcode}
+
+\matlabheading{Command-window output}
+\begin{matlaboutput}
+Bi =
+
+    2.3810    3.1250    2.5000
+\end{matlaboutput}
+
+\matlabheadingtwo{Symbolic result}
+\begin{matlabsymbolicoutput}
+tau = rho*cp*V/(h*A)
+\end{matlabsymbolicoutput}
+
+\matlabheadingtwo{Table output}
+\begin{matlabtableoutput}{%
+  \begin{tabular}{lr}
+    Material & Biot number \\
+    SAN & 2.381 \\
+    PET & 3.125 \\
+    PVC & 2.500
+  \end{tabular}%
+}
+\end{matlabtableoutput}
+
+\end{document}

@@ -1,0 +1,40 @@
+name: Compile examples
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  examples:
+    name: Compile LaTeX examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Compile examples
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: |
+            examples/noahnotes/main.tex
+            examples/noahassignment/main.tex
+            examples/rdproject/main.tex
+            examples/noah-matlab/main.tex
+          work_in_root_file_dir: true
+          latexmk_use_lualatex: true
+          texlive_version: 2025
+          os: debian
+          args: >-
+            -r ../../latexmkrc
+            -file-line-error
+            -halt-on-error
+            -interaction=nonstopmode
+        env:
+          TEXINPUTS: ".:../../:"

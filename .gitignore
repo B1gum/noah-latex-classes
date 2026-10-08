@@ -12,7 +12,23 @@
 *.out
 *.run.xml
 *.synctex.gz
+*.synctex(busy)
 *.toc
 *.xdv
 *.lof
 *.lot
+*.glg
+*.glo
+*.gls
+*.ist
+*.acn
+*.acr
+*.alg
+*.xdy
+
+# Generated example files
+examples/**/main.pdf
+examples/**/references.bib
+
+# Local personal configuration
+noah-private.cfg
