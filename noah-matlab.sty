@@ -1,0 +1,121 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{noah-matlab}[2026/10/08 Optional MATLAB export compatibility and styling]
+
+% MATLAB source-code highlighting and exported-output support.
+% This package intentionally does not alter global paragraph, hyperlink,
+% page, or document styling.
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{fancyvrb}
+\RequirePackage{upquote}
+\RequirePackage{matlab-prettifier}
+
+% ---------------------------------------------------------------------------
+% Palette
+% ---------------------------------------------------------------------------
+\definecolor{NoahMatlabBackground}{RGB}{245,246,248}
+\definecolor{NoahMatlabRule}{RGB}{207,210,214}
+\definecolor{NoahMatlabMuted}{RGB}{135,135,135}
+\definecolor{NoahMatlabOutput}{gray}{0.40}
+
+% MathWorks' exported matlab.sty uses the public colour name `output'.
+% Keep it as a compatibility alias for exported fragments.
+\providecolor{output}{gray}{0.40}
+
+% ---------------------------------------------------------------------------
+% MATLAB source code
+% ---------------------------------------------------------------------------
+\lstdefinestyle{NoahMatlab}{
+  style=Matlab-editor,
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  tabsize=4,
+  numbers=left,
+  firstnumber=last,
+  numberstyle=\scriptsize\color{NoahMatlabMuted},
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{NoahMatlabRule},
+  backgroundcolor=\color{NoahMatlabBackground},
+  xleftmargin=2em,
+  framexleftmargin=1.5em,
+  framesep=6pt,
+  showstringspaces=false,
+  upquote=true
+}
+
+% MathWorks exports source cells as `matlabcode'.  Make that environment use
+% the Noah style automatically while allowing optional listings overrides.
+\lstnewenvironment{matlabcode}[1][]
+  {\lstset{style=NoahMatlab,#1}}
+  {}
+
+% ---------------------------------------------------------------------------
+% MATLAB output compatibility
+% ---------------------------------------------------------------------------
+\providecommand{\maxwidth}[1]{\ifdim\linewidth>#1 #1\else\linewidth\fi}
+\providecommand{\mlcell}[1]{{\color{output}\ttfamily #1}}
+
+\newenvironment{matlaboutput}{%
+  \Verbatim[xleftmargin=1.25em,formatcom=\color{output}\small]%
+}{\endVerbatim}
+
+\newenvironment{matlabsymbolicoutput}{%
+  \list{}{\leftmargin=1.25em\relax}%
+  \item\relax
+  \color{output}\ttfamily\small
+}{\endlist}
+
+\newenvironment{matlabtableoutput}[1]{%
+  \begingroup
+  \color{output}%
+  \hspace*{1.25em}#1%
+}{%
+  \endgroup
+}
+
+% ---------------------------------------------------------------------------
+% MATLAB-exported headings and table-of-contents hooks
+% ---------------------------------------------------------------------------
+\newif\ifnoah@matlab@multipletitles
+\newif\ifnoah@matlab@hastoc
+
+\newcommand{\matlabmultipletitles}{\noah@matlab@multipletitlestrue}
+\newcommand{\matlabhastoc}{\noah@matlab@hastoctrue}
+
+\newcommand{\matlabtitle}[1]{%
+  \section*{#1}%
+  \ifnoah@matlab@multipletitles
+    \ifnoah@matlab@hastoc
+      \addcontentsline{toc}{section}{#1}%
+    \fi
+  \fi
+}
+
+\newcommand{\matlabheading}[1]{%
+  \subsection*{#1}%
+  \ifnoah@matlab@hastoc
+    \addcontentsline{toc}{subsection}{#1}%
+  \fi
+}
+
+\newcommand{\matlabheadingtwo}[1]{%
+  \subsubsection*{#1}%
+  \ifnoah@matlab@hastoc
+    \addcontentsline{toc}{subsubsection}{#1}%
+  \fi
+}
+
+\newcommand{\matlabheadingthree}[1]{%
+  \paragraph*{#1}%
+  \ifnoah@matlab@hastoc
+    \addcontentsline{toc}{paragraph}{#1}%
+  \fi
+}
+
+\newcommand{\matlabtableofcontents}[1]{%
+  \begingroup
+  \renewcommand{\contentsname}{#1}%
+  \tableofcontents
+  \endgroup
+}
