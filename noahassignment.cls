@@ -1,11 +1,9 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{noahassignment}[2026/08/04 My problem-sheet assignment class]
+\ProvidesClass{noahassignment}[2026/10/08 My problem-sheet assignment class]
 
 % ---------------------------------------------------------------------------
 % Options
 % ---------------------------------------------------------------------------
-\newif\ifnoah@assignment \noah@assignmenttrue
-\newif\ifnoah@notes      \noah@notesfalse
 \newif\ifnoah@danish     \noah@danishfalse
 \newif\ifnoah@anonymous  \noah@anonymousfalse
 \newif\ifnoah@draft      \noah@draftfalse
@@ -20,19 +18,50 @@
 \DeclareOption{print}{\noah@printtrue}
 \DeclareOption{screen}{\noah@printfalse}
 \DeclareOption{oneside}{}
-\DeclareOption{twoside}{\ClassError{noahassignment}{Assignments should be one-sided}{Remove the twoside option.}}
-\DeclareOption*{\ClassError{noahassignment}{Unknown option `\CurrentOption'}{Allowed options: english, danish, anonymous, draft, final, print, screen, oneside.}}
+
+\DeclareOption{twoside}{%
+  \ClassError{noahassignment}
+    {Assignments should be one-sided}
+    {Remove the twoside option.}%
+}
+
+\DeclareOption*{%
+  \ClassError{noahassignment}
+    {Unknown option `\CurrentOption'}
+    {Allowed options: english, danish, anonymous, draft, final, print, screen, oneside.}%
+}
 \ProcessOptions\relax
 
 \LoadClass[11pt,a4paper,oneside]{article}
+
+\PassOptionsToPackage{
+  style=authoryear,
+  sorting=nyt
+}{biblatex}
+
 \RequirePackage{noah-common}
+\NoahInstallAuthorYearCitationLinks
+
+\ExplSyntaxOn
+\tl_gset:Nn \g_noah_pdf_subject_tl
+  {\NoahLabelAssignmentFor\c_space_tl\NoahCourseCompact}
+\ExplSyntaxOff
+
 \RequirePackage{titlesec}
 \RequirePackage{lastpage}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 
 % Assignment layout
-\geometry{a4paper,top=27mm,bottom=27mm,left=28mm,right=28mm,headheight=32pt,headsep=8mm,footskip=14mm}
+\geometry{
+  top=27mm,
+  bottom=27mm,
+  left=28mm,
+  right=28mm,
+  headheight=32pt,
+  headsep=8mm,
+  footskip=14mm
+}
 
 \setstretch{1.25}
 
@@ -74,7 +103,6 @@
 \renewcommand{\cftsubsecpagefont}{\bfseries\sffamily\color{AUblueDark}}
 \renewcommand{\cftsubsubsecfont}{\sffamily\color{AUblue}}
 \renewcommand{\cftsubsubsecpagefont}{\sffamily\color{AUblue}}
-\renewcommand{\cftsecdotsep}{\cftdotsep}
 
 % ---------------------------------------------------------------------------
 % Assignment-specific setup keys
@@ -120,7 +148,6 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{AUblueDark}\leaders\hrule height 0.45pt\hfill}}
-\renewcommand{\footrulewidth}{0pt}
 \fancyhead[C]{\NoahAssignmentRunningHead}
 \fancyfoot[L]{\small\sffamily\color{AUblueDark}\NoahCourseRunning}
 \fancyfoot[R]{\small\sffamily\color{AUblueDark}\NoahPageAbbrev~\thepage~\NoahLabelOf~\pageref*{LastPage}}
@@ -146,7 +173,7 @@
     \vspace{8mm}
     \begingroup
     \setstretch{1.05}
-    \begin{tabularx}{\dimexpr\linewidth-2pt\relax}{@{}>{\raggedright\arraybackslash}p{38mm}X@{}}
+    \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{38mm}X@{}}
       \ifnoah@anonymous
         \NoahCandidateMetadataRow
       \else
@@ -194,26 +221,6 @@
 % source compatibility.
 \newif\ifnoah@assignmentlecturepending
 \noah@assignmentlecturependingfalse
-
-\newcommand*\l@lecture[2]{%
-  \ifnum\c@tocdepth>\z@
-    \addpenalty\@secpenalty
-    \addvspace{0.85\baselineskip plus 1pt}%
-    \begingroup
-      \leftskip\z@
-      \rightskip\@tocrmarg
-      \parfillskip-\rightskip
-      \parindent\z@
-      \interlinepenalty\@M
-      \leavevmode
-      {\large\sffamily\color{black}#1}%
-      \nobreak\hfill\nobreak
-      \hb@xt@\@pnumwidth{\hss\normalfont\normalsize\sffamily\color{black}#2}%
-      \par
-    \endgroup
-  \fi
-}
-\def\toclevel@lecture{1}
 
 \NewDocumentCommand{\lecture}{O{} m m m}{%
   % Assignment problems normally begin on fresh pages. Start the lecture on
@@ -272,7 +279,6 @@
     \ifnoah@assignmentresetpending
       \pagenumbering{arabic}
       \global\noah@assignmentresetpendingfalse
-      \global\noah@inmainmattertrue
     \fi
     \bool_set_true:N \l_noah_problem_rule_bool
     \keys_set:nn {noah/problem}{#1}
@@ -351,24 +357,28 @@
 % ---------------------------------------------------------------------------
 % Assignment-only structural helpers
 % ---------------------------------------------------------------------------
-\newcommand{\AUheading}[1]{%
+\newcommand{\NoahAssignmentHeading}[1]{%
   \par\vspace{0.45\baselineskip}
   {\sffamily\bfseries\color{AUblueDark}#1\par}\nobreak
 }
 
+\let\AUheading\NoahAssignmentHeading % compatibility
+
 \newenvironment{assumptions}[1][\NoahLabelAssumptions]{%
-  \AUheading{#1}
+  \NoahAssignmentHeading{#1}
   \begin{itemize}[nosep]
 }{\end{itemize}\par\medskip}
 
-\newenvironment{givens}[1][\NoahLabelGivens]{%
-  \AUheading{#1}
-  \begin{center}
-  \begin{tabular}{>{$}r<{$} !{\color{AUblueDark}\vrule width 0.8pt} l}
-}{%
-  \end{tabular}
-  \end{center}
-}
+\NewDocumentEnvironment{givens}{O{\NoahLabelGivens} +b}{%
+  \NoahAssignmentHeading{#1}
+  \noindent
+  \begin{tabularx}{\linewidth}
+    {>{$}r<{$}
+     !{\color{AUblueDark}\vrule width 0.8pt}
+     >{\raggedright\arraybackslash}X}
+    #2
+  \end{tabularx}
+}{}
 
 % A derivation may be used either as a plain block (the legacy interface) or
 % as a list of derivation parts matching the problem's subproblem list.  The
@@ -377,7 +387,6 @@
 \ExplSyntaxOn
 \int_new:N  \g_noah_derivation_result_count_int
 \tl_new:N   \l_noah_derivation_current_ref_tl
-\tl_new:N   \l_noah_derivation_current_display_tl
 \bool_new:N \l_noah_derivation_parts_bool
 \bool_new:N \l_noah_derivation_part_has_result_bool
 \int_new:N  \l_noah_derivation_part_int
@@ -413,17 +422,6 @@
   }
 \AtBeginDocument{\noah_setup_derivation_numbering:}
 
-\cs_new:Npn \noah_derivation_local_label:
-  {
-    \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {letters}
-      {(\int_to_alph:n {\l_noah_derivation_part_int})}
-      {
-        \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {decimal}
-          {\theproblem.\int_to_arabic:n {\l_noah_derivation_part_int}}
-          {\theproblem\int_to_alph:n {\l_noah_derivation_part_int}}
-      }
-  }
-
 \cs_new:Npn \noah_derivation_index_label:n #1
   {
     \tl_if_eq:VnTF \g_noah_subproblem_numbering_tl {letters}
@@ -435,14 +433,16 @@
       }
   }
 
-\cs_new:Npn \noah_derivation_part_heading:
-  {\tl_use:N \l_noah_derivation_current_display_tl}
-
 \cs_new_protected:Npn \noah_derivation_summary_entry:nnn #1#2#3
   {
     \par\noindent
     \makebox[10mm][l]
-      {\sffamily\bfseries\color{AUblueDark}#2}%
+      {
+        \sffamily\bfseries\color{AUblueDark}
+        \tl_if_blank:eTF {#1}
+          {#2}
+          {\hyperref[#1]{#2}}
+      }%
     \begin{minipage}[t]{\dimexpr\linewidth-10mm\relax}
       #3
     \end{minipage}
@@ -462,7 +462,6 @@
     \setlength{\belowdisplayshortskip}{6pt}
     \int_gzero:N \g_noah_derivation_result_count_int
     \tl_clear:N \l_noah_derivation_current_ref_tl
-    \tl_clear:N \l_noah_derivation_current_display_tl
     \bool_set_false:N \l_noah_derivation_parts_bool
     \bool_gset_false:N \l_noah_derivation_part_has_result_bool
   }
@@ -472,7 +471,7 @@
     \bool_if:NT \l_noah_derivation_parts_bool
       {
         \bool_if:NF \l_noah_derivation_part_has_result_bool
-          {\ClassWarning{noahassignment}{The final derivation part has no subresult}}
+          {\ClassWarning{noahassignment}{The~final~derivation~part~has~no~subresult}}
         \end{derivationparts}
         \par\vspace{0.55\baselineskip}
         {\color{AUblueDark}\rule{\linewidth}{0.8pt}}
@@ -485,10 +484,13 @@
                 {
                   \int_compare:nNnT {##1} > {1}
                     {\par\medskip{\color{AUblue!35}\hrule height 0.5pt}\medskip}
-                  \noah_derivation_summary_entry:nnn
-                    {}
-                    {\noah_derivation_index_label:n {##1}}
-                    {\tl_use:c {g_noah_derivation_body_##1_tl}}
+                    \noah_derivation_summary_entry:nnn
+                      {\tl_use:c {g_noah_derivation_ref_##1_tl}}
+                      {
+                        \noah_derivation_index_label:n
+                          {\tl_use:c {g_noah_derivation_part_##1_tl}}
+                      }
+                      {\tl_use:c {g_noah_derivation_body_##1_tl}}
                 }
             \end{finalresult}
           }
@@ -509,7 +511,7 @@
     \bool_if:NTF \l_noah_derivation_parts_bool
       {
         \bool_if:NF \l_noah_derivation_part_has_result_bool
-          {\ClassWarning{noahassignment}{The preceding derivation part has no subresult}}
+          {\ClassWarning{noahassignment}{The~preceding~derivation~part~has~no~subresult}}
       }
       {
         \bool_set_true:N \l_noah_derivation_parts_bool
@@ -517,8 +519,6 @@
       }
     \item
     \int_set:Nn \l_noah_derivation_part_int {\value{derivationpartsi}}
-    \tl_set:Nx \l_noah_derivation_current_display_tl
-      {\noah_derivation_local_label:}
     \IfNoValueTF{#1}
       {\tl_clear:N \l_noah_derivation_current_ref_tl}
       {\tl_set:Nn \l_noah_derivation_current_ref_tl {#1}}
@@ -536,6 +536,13 @@
         \tl_gset:cn
           {g_noah_derivation_body_\int_use:N\g_noah_derivation_result_count_int _tl}
           {#1}
+        \tl_gset:cx
+          {g_noah_derivation_part_\int_use:N\g_noah_derivation_result_count_int _tl}
+          {\int_use:N \l_noah_derivation_part_int}
+
+        \tl_gset:cx
+          {g_noah_derivation_ref_\int_use:N\g_noah_derivation_result_count_int _tl}
+          {\tl_use:N \l_noah_derivation_current_ref_tl}
         \bool_gset_true:N \l_noah_derivation_part_has_result_bool
       }
       {

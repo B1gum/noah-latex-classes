@@ -1,11 +1,9 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{noahnotes}[2026/08/04 Noah's lecture-notes class]
+\ProvidesClass{noahnotes}[2026/10/08 Noah's lecture-notes class]
 
 % ---------------------------------------------------------------------------
 % Deliberately small, curated option surface
 % ---------------------------------------------------------------------------
-\newif\ifnoah@assignment \noah@assignmentfalse
-\newif\ifnoah@notes      \noah@notestrue
 \newif\ifnoah@danish     \noah@danishfalse
 \newif\ifnoah@anonymous  \noah@anonymousfalse
 \newif\ifnoah@draft      \noah@draftfalse
@@ -29,14 +27,33 @@
 \else
   \LoadClass[11pt,a4paper,oneside]{article}
 \fi
+
+\PassOptionsToPackage{
+  style=authoryear,
+  sorting=nyt
+}{biblatex}
+
 \RequirePackage{noah-common}
+\NoahInstallAuthorYearCitationLinks
 \RequirePackage{titlesec}
 \RequirePackage{needspace}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 
+\ExplSyntaxOn
+\tl_gset:Nn \g_noah_pdf_subject_tl
+  {\NoahLabelLectureNotesFor\c_space_tl\NoahCourseCompact}
+\ExplSyntaxOff
+
 % Notes layout
-\geometry{a4paper,top=23mm,bottom=24mm,left=24mm,right=24mm,headheight=30pt,headsep=7mm,footskip=12mm}
+\geometry{top=23mm,
+  bottom=24mm,
+  left=24mm,
+  right=24mm,
+  headheight=30pt,
+  headsep=7mm,
+  footskip=12mm
+}
 
 \setstretch{1.15}
 
@@ -78,75 +95,69 @@
 \renewcommand{\cftsubsecpagefont}{\sffamily\color{AUblue}}
 \renewcommand{\cftsubsubsecfont}{\sffamily\color{AUblueDark}}
 \renewcommand{\cftsubsubsecpagefont}{\sffamily\color{AUblueDark}}
-\renewcommand{\cftsecdotsep}{\cftdotsep}
 
 % ---------------------------------------------------------------------------
 % Lecture-aware running headers
 % ---------------------------------------------------------------------------
-\newcommand{\noah@currentnav}{\ReportTitle}
-\newcommand{\noah@currentnavrunning}{\NoahRunningTitle}
 \newif\ifnoah@lectureactive
 \noah@lectureactivefalse
 
-% When no lecture has been declared, ordinary section marks supply navigation.
+% Before the first lecture, ordinary sections provide the navigation mark.
+% Once lectures are in use, the current lecture remains the running context.
 \renewcommand{\sectionmark}[1]{%
-  \ifnoah@lectureactive\else
-    \gdef\noah@currentnav{\NoahTitleCase{#1}}%
-    \global\let\noah@currentnavrunning\noah@currentnav
-    \markright{\noah@currentnavrunning}%
+  \ifnoah@lectureactive
+  \else
+    \markright{\NoahTitleCase{#1}}%
   \fi
 }
-\AtBeginDocument{\markright{\NoahRunningTitle}}
+
+\AtBeginDocument{%
+  \markright{\NoahRunningTitle}%
+}
 
 \newcommand{\NoahNotesRunningHead}{%
   \makebox[\headwidth][c]{%
-    \begin{minipage}[t]{0.48\headwidth}
-      \raggedright\scriptsize\sffamily\color{AUblueDark}\NoahCourseShortName
+    \begin{minipage}[t]{0.64\headwidth}
+      \raggedright
+      \scriptsize\sffamily\color{AUblue}
+      \nouppercase{\rightmark}
     \end{minipage}\hfill
-    \begin{minipage}[t]{0.48\headwidth}
-      \raggedleft\scriptsize\sffamily\color{AUblue}\NoahPrimaryAuthorShort
-    \end{minipage}%
-  }%
-}
-\newcommand{\NoahNotesTwosideEvenHead}{%
-  \makebox[\headwidth][c]{%
-    \begin{minipage}[t]{0.12\headwidth}
-      \raggedright\footnotesize\sffamily\color{AUblueDark}\thepage
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.40\headwidth}
-      \centering\scriptsize\sffamily\color{AUblue}\NoahPrimaryAuthorShort
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.40\headwidth}
-      \raggedleft\scriptsize\sffamily\color{AUblueDark}\NoahCourseShortName
-    \end{minipage}%
-  }%
-}
-\newcommand{\NoahNotesTwosideOddHead}{%
-  \makebox[\headwidth][c]{%
-    \begin{minipage}[t]{0.40\headwidth}
-      \raggedright\scriptsize\sffamily\color{AUblueDark}\NoahCourseShortName
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.40\headwidth}
-      \centering\scriptsize\sffamily\color{AUblue}\NoahPrimaryAuthorShort
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.12\headwidth}
-      \raggedleft\footnotesize\sffamily\color{AUblueDark}\thepage
+    \begin{minipage}[t]{0.32\headwidth}
+      \raggedleft
+      \scriptsize\sffamily\color{AUblueDark}
+      \NoahCourseShortName
     \end{minipage}%
   }%
 }
 
 \pagestyle{fancy}
 \fancyhf{}
-\renewcommand{\headrule}{\hbox to\headwidth{\color{AUblueDark}\leaders\hrule height 0.4pt\hfill}}
-\renewcommand{\footrulewidth}{0pt}
+
+\renewcommand{\headrule}{%
+  \hbox to\headwidth{%
+    \color{AUblueDark}%
+    \leaders\hrule height 0.4pt\hfill
+  }%
+}
+
 \if@twoside
-  % Mirror course, abbreviated author, and page number across each spread.
-  \fancyhead[CE]{\NoahNotesTwosideEvenHead}
-  \fancyhead[CO]{\NoahNotesTwosideOddHead}
+  \fancyhead[LE]{%
+    \footnotesize\sffamily\color{AUblueDark}\thepage
+  }
+  \fancyhead[RE]{%
+    \scriptsize\sffamily\color{AUblueDark}\NoahCourseShortName
+  }
+  \fancyhead[LO]{%
+    \scriptsize\sffamily\color{AUblue}\nouppercase{\rightmark}
+  }
+  \fancyhead[RO]{%
+    \footnotesize\sffamily\color{AUblueDark}\thepage
+  }
 \else
-  % Fixed-width blocks allow long marks to wrap instead of overlap.
   \fancyhead[C]{\NoahNotesRunningHead}
-  \fancyfoot[C]{\small\sffamily\color{AUblueDark}\thepage}
+  \fancyfoot[C]{%
+    \small\sffamily\color{AUblueDark}\thepage
+  }
 \fi
 
 % ---------------------------------------------------------------------------
@@ -167,7 +178,7 @@
     \vspace{8mm}
     \begingroup
     \setstretch{1.05}
-    \begin{tabularx}{\dimexpr\linewidth-2pt\relax}{@{}>{\raggedright\arraybackslash}p{38mm}X@{}}
+    \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{38mm}X@{}}
       \NoahNotesAuthorRows
       \NoahCourseMetadataRow
       \NoahInstructorMetadataRow
@@ -191,54 +202,51 @@
 % ---------------------------------------------------------------------------
 % Manual lecture identifiers and custom contents entries
 % ---------------------------------------------------------------------------
-\newcommand*\l@lecture[2]{%
-  \ifnum\c@tocdepth>\z@
-    \addpenalty\@secpenalty
-    \addvspace{0.85\baselineskip plus 1pt}%
-    \begingroup
-      \leftskip\z@
-      \rightskip\@tocrmarg
-      \parfillskip-\rightskip
-      \parindent\z@
-      \interlinepenalty\@M
-      \leavevmode
-      {\large\sffamily\color{black}#1}%
-      \nobreak\hfill\nobreak
-      \hb@xt@\@pnumwidth{\hss\normalfont\normalsize\sffamily\color{black}#2}%
-      \par
-    \endgroup
-  \fi
-}
-\def\toclevel@lecture{1}
-
-% Optional short navigation title retained for custom page styles
 \NewDocumentCommand{\lecture}{O{} m m m}{%
-  \protected@edef\thelecture{#2}% manual visible identifier
-  \refstepcounter{lecture}% unique hyperlink anchor + cleveref state
+  \protected@edef\thelecture{#2}%
+  \refstepcounter{lecture}%
+
   \NoahStoreTitleCase{\noah@lecturetitle}{#4}%
+
   \ifstrempty{#1}
     {\let\noah@lectureshort\noah@lecturetitle}
     {\NoahStoreTitleCase{\noah@lectureshort}{#1}}%
+
   \protected@edef\@currentlabelname{\noah@lecturetitle}%
   \global\noah@lectureactivetrue
+
   \ifstrempty{#4}
-    {\gdef\noah@currentnav{\NoahLabelLecture~#2}}
-    {\protected@xdef\noah@currentnav{\NoahLabelLecture~#2: \noah@lecturetitle}}%
+    {\gdef\noah@lectureheading{\NoahLabelLecture~#2}}
+    {\protected@xdef\noah@lectureheading{%
+      \NoahLabelLecture~#2: \noah@lecturetitle
+    }}%
+
   \ifstrempty{#1}
-    {\global\let\noah@currentnavrunning\noah@currentnav}
-    {\protected@xdef\noah@currentnavrunning{\NoahLabelLecture~#2: \noah@lectureshort}}%
-  \markright{\noah@currentnavrunning}%
+    {\let\noah@lecturerunning\noah@lectureheading}
+    {\protected@xdef\noah@lecturerunning{%
+      \NoahLabelLecture~#2: \noah@lectureshort
+    }}%
+
+  \markright{\noah@lecturerunning}%
+
   \Needspace{4\baselineskip}
   \par\vspace{0.8\baselineskip}
+
   \noindent
   \begin{minipage}[t]{0.78\linewidth}
-    \raggedright\normalsize\sffamily\color{black}\noah@currentnav
+    \raggedright
+    \normalsize\sffamily\color{black}
+    \noah@lectureheading
   \end{minipage}\hfill
   \begin{minipage}[t]{0.18\linewidth}
-    \raggedleft\small\sffamily\color{AUblue}#3
+    \raggedleft
+    \small\sffamily\color{AUblue}
+    #3
   \end{minipage}%
+
   \par\vspace{0.2\baselineskip}
-  \addcontentsline{toc}{lecture}{\noah@currentnav}%
+
+  \addcontentsline{toc}{lecture}{\noah@lectureheading}%
 }
 
 % Figures and tables are numbered within sections.
@@ -278,48 +286,90 @@
   \refstepcounter{definition}
   \def\@currentlabelname{#1}
   \begin{tcolorbox}[
-    enhanced,sharp corners,frame hidden,boxrule=0pt,
-    colback=AUgreen!7,colbacktitle=AUgreen!25,coltitle=AUgreenDark,
+    enhanced,
+    sharp corners,
+    breakable,
+    frame hidden,
+    boxrule=0pt,
+    colback=AUgreen!7,
+    colbacktitle=AUgreen!25,
+    coltitle=AUgreenDark,
     borderline west={2pt}{0pt}{AUgreen},
-    left=10pt,right=10pt,top=8pt,bottom=8pt,
+    left=9pt,
+    right=9pt,
+    top=7pt,
+    bottom=7pt,
     fonttitle=\bfseries\sffamily,
     title={\noah@boxtitle{\NoahLabelDefinition}{\thedefinition}{#1}},
-    before skip=9pt,after skip=9pt
+    before skip=8pt,
+    after skip=8pt
   ]
 }{\end{tcolorbox}}
 
-\NewDocumentEnvironment{exa}{O{}}{%
+\NewDocumentEnvironment{example}{O{}}{%
+  \Needspace{7\baselineskip}
   \refstepcounter{example}
   \def\@currentlabelname{#1}
   \begin{tcolorbox}[
-    enhanced,sharp corners,breakable,frame hidden,boxrule=0pt,
-    colback=AUorange!5,colbacktitle=AUorange!18,coltitle=AUorangeDark,
+    enhanced,
+    sharp corners,
+    breakable,
+    frame hidden,
+    boxrule=0pt,
+    colback=AUorange!5,
+    colbacktitle=AUorange!18,
+    coltitle=AUorangeDark,
     borderline west={2pt}{0pt}{AUorange},
-    left=9pt,right=9pt,top=7pt,bottom=7pt,
+    left=9pt,
+    right=9pt,
+    top=7pt,
+    bottom=7pt,
     fonttitle=\bfseries\sffamily,
     title={\noah@boxtitle{\NoahLabelExample}{\theexample}{#1}},
-    before skip=8pt,after skip=8pt
+    before skip=8pt,
+    after skip=8pt
   ]
-}{\end{tcolorbox}}
+}{%
+  \end{tcolorbox}
+}
+
+% Backwards compatability
+\NewDocumentEnvironment{exa}{O{}}
+  {\begin{example}[#1]}
+  {\end{example}}
+
+\NewDocumentEnvironment{sæt}{O{}}
+  {\begin{theorem}[#1]}
+  {\end{theorem}}
 
 \newcommand{\proofpart}{%
   \tcblower
   {\bfseries\sffamily\NoahLabelProof.}\par\smallskip
 }
 
-\NewDocumentEnvironment{sæt}{O{}}{%
+\NewDocumentEnvironment{theorem}{O{}}{%
   \Needspace{7\baselineskip}
   \refstepcounter{theorem}
   \def\@currentlabelname{#1}
   \begin{tcolorbox}[
-    enhanced,sharp corners,breakable,frame hidden,boxrule=0pt,
-    colback=AUpurple!7,colbacktitle=AUpurple!25,coltitle=AUpurpleDark,
+    enhanced,
+    sharp corners,
+    breakable,
+    frame hidden,
+    boxrule=0pt,
+    colback=AUpurple!7,
+    colbacktitle=AUpurple!25,
+    coltitle=AUpurpleDark,
     colbacklower=AUpurple!7,
     segmentation style={solid,line width=0.5pt,draw=AUpurple!55},
     borderline west={2pt}{0pt}{AUpurple},
-    left=10pt,right=10pt,top=8pt,bottom=8pt,
+    left=9pt,
+    right=9pt,
+    top=7pt,
+    bottom=7pt,
     fonttitle=\bfseries\sffamily,
     title={\noah@boxtitle{\NoahLabelTheorem}{\thetheorem}{#1}},
-    before skip=9pt,after skip=9pt
+    before skip=8pt,
+    after skip=8pt
   ]
 }{\end{tcolorbox}}

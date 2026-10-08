@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{noah-common}[2026/08/04 Shared infrastructure for my classes]
+\ProvidesPackage{noah-common}[2026/10/08 Shared infrastructure for my classes]
 
 \RequirePackage{iftex}
 \ifLuaTeX\else
@@ -10,7 +10,7 @@
 % Language, page setup, and basic typography
 % ---------------------------------------------------------------------------
 \RequirePackage[\noah@language]{babel}
-\RequirePackage{geometry}
+\RequirePackage[a4paper]{geometry}
 \RequirePackage{mathtools}
 \RequirePackage{fontspec}
 \RequirePackage{unicode-math}
@@ -29,8 +29,8 @@
 % taken from STIX Two Math when available.
 \IfFontExistsTF{NewCM10-Book.otf}
   {\setmainfont{NewCM10-Book.otf}[
-     % NewCM's shipped fontspec config leaves an 8--9 pt gap. Keep its
-     % intended optical sizing while covering that interval continuously.
+    % NewCM's shipped fontspec config leaves an 8--9 pt gap. Keep its
+    % intended optical sizing while covering that interval continuously.
      SizeFeatures={
        {Size=-9,
         Font=NewCM08-Book.otf,
@@ -104,7 +104,7 @@
 % ---------------------------------------------------------------------------
 % Mathematics and units
 % ---------------------------------------------------------------------------
-\providecommand{\Vec}[1]{\symbfit{#1}}
+\providecommand{\Vec}{}
 \renewcommand{\Vec}[1]{\symbfit{#1}}
 \newcommand{\Mat}[1]{\symbfup{#1}}
 \renewcommand{\Re}{\operatorname{Re}}
@@ -123,10 +123,11 @@
   exponent-product=\cdot,
   group-separator={\,},
   group-minimum-digits=5,
-  per-mode=fraction,
   range-phrase={--},
   range-units=single,
-  detect-all
+  detect-all,
+  separate-uncertainty=true,
+  multi-part-units=single
 }
 
 % Inline alternatives using powers instead of fractions
@@ -156,7 +157,6 @@
 \definecolor{AUmagenta}{RGB}{226,0,122}
 \definecolor{AUmagentaDark}{RGB}{95,0,48}
 \definecolor{AUgray}{RGB}{135,135,135}
-\definecolor{NoahPaperGray}{RGB}{245,246,248}
 
 % ---------------------------------------------------------------------------
 % Figures, tables, captions, and lists
@@ -171,7 +171,6 @@
 \RequirePackage{enumitem}
 \RequirePackage{caption}
 \RequirePackage{subcaption}
-\RequirePackage{wrapfig}
 
 \newcommand{\NoahConfigureListsAndCaptions}[3]{%
   \setlist{%
@@ -294,6 +293,7 @@
 \NewDocumentCommand{\candidatenumber}{m}{\tl_gset:Nn\g_noah_candidate_number_tl{#1}}
 
 \cs_new:Npn \NoahCourseName {\tl_use:N\g_noah_course_tl}
+\cs_new:Npn \NoahCourseCode {\tl_use:N\g_noah_course_code_tl}
 \cs_new:Npn \NoahInstructor {\tl_use:N\g_noah_instructor_tl}
 \cs_new:Npn \NoahSemester {\tl_use:N\g_noah_semester_tl}
 \cs_new:Npn \NoahDepartment {\tl_use:N\g_noah_department_tl}
@@ -405,18 +405,40 @@
         ##2\hfill\seq_item:Nn\g_noah_author_id_seq{##1}\\[1.5mm]
       }
   }
+
 \NewDocumentCommand{\NoahMetadataRow}{mm}
   {\textbf{\sffamily #1} & #2\\[1mm]}
+
 \NewDocumentCommand{\NoahCourseMetadataRow}{}
-  {\tl_if_blank:VF\g_noah_course_tl{\textbf{\sffamily\NoahLabelCourse} & \NoahCourseTitle\\[1mm]}}
+  {
+    \tl_if_blank:VF \g_noah_course_tl
+      {\NoahMetadataRow{\NoahLabelCourse}{\NoahCourseTitle}}
+  }
+
 \NewDocumentCommand{\NoahInstructorMetadataRow}{}
-  {\tl_if_blank:VF\g_noah_instructor_tl{\textbf{\sffamily\NoahLabelInstructor} & \NoahInstructor\\[1mm]}}
+  {
+    \tl_if_blank:VF \g_noah_instructor_tl
+      {\NoahMetadataRow{\NoahLabelInstructor}{\NoahInstructor}}
+  }
+
 \NewDocumentCommand{\NoahSemesterMetadataRow}{}
-  {\tl_if_blank:VF\g_noah_semester_tl{\textbf{\sffamily\NoahLabelSemester} & \NoahSemester\\[1mm]}}
+  {
+    \tl_if_blank:VF \g_noah_semester_tl
+      {\NoahMetadataRow{\NoahLabelSemester}{\NoahSemester}}
+  }
+
 \NewDocumentCommand{\NoahSubmissionMetadataRow}{}
-  {\tl_if_blank:VF\g_noah_submission_date_tl{\textbf{\sffamily\NoahLabelSubmissionDate} & \NoahSubmissionDate\\[1mm]}}
+  {
+    \tl_if_blank:VF \g_noah_submission_date_tl
+      {\NoahMetadataRow{\NoahLabelSubmissionDate}{\NoahSubmissionDate}}
+  }
+
 \NewDocumentCommand{\NoahCandidateMetadataRow}{}
-  {\tl_if_blank:VF\g_noah_candidate_number_tl{\textbf{\sffamily\NoahLabelCandidate} & \NoahCandidateNumber\\[1mm]}}
+  {
+    \tl_if_blank:VF \g_noah_candidate_number_tl
+      {\NoahMetadataRow{\NoahLabelCandidate}{\NoahCandidateNumber}}
+  }
+
 \NewDocumentCommand{\NoahIfBlankTF}{mmm}
   {\tl_if_blank:eTF{#1}{#2}{#3}}
 
@@ -477,6 +499,7 @@
   \newcommand{\NoahLabelOf}{af}
   \newcommand{\NoahLabelAssignmentFor}{Opgave for}
   \newcommand{\NoahLabelLectureNotesFor}{Forelæsningsnoter for}
+  \newcommand{\NoahLabelCourseCode}{Kursuskode}
 \else
   \newcommand{\NoahLabelAuthor}{Author}
   \newcommand{\NoahLabelAuthors}{Authors}
@@ -504,6 +527,7 @@
   \newcommand{\NoahLabelOf}{of}
   \newcommand{\NoahLabelAssignmentFor}{Assignment for}
   \newcommand{\NoahLabelLectureNotesFor}{Lecture notes for}
+  \newcommand{\NoahLabelCourseCode}{Course code}
 \fi
 
 % ---------------------------------------------------------------------------
@@ -512,21 +536,22 @@
 \RequirePackage{fancyhdr}
 \RequirePackage{eso-pic}
 \newif\ifnoah@infrontmatter
-\newif\ifnoah@inmainmatter
-\noah@infrontmatterfalse
-\noah@inmainmatterfalse
 
-\providecommand{\frontmatter}{%
+\newcommand{\frontmatter}{%
   \clearpage
   \global\noah@infrontmattertrue
-  \global\noah@inmainmatterfalse
   \pagenumbering{roman}%
 }
-\providecommand{\mainmatter}{%
+
+\newcommand{\mainmatter}{%
   \clearpage
   \global\noah@infrontmatterfalse
-  \global\noah@inmainmattertrue
   \pagenumbering{arabic}%
+}
+
+\newcommand{\backmatter}{%
+  \clearpage
+  \global\noah@infrontmatterfalse
 }
 
 \newcommand{\NoahTitleStripe}{%
@@ -556,40 +581,44 @@
 % Contents styling and automatic title casing for ordinary headings
 % ---------------------------------------------------------------------------
 \RequirePackage{tocloft}
-\renewcommand{\cfttoctitlefont}{\Huge\bfseries\sffamily\color{AUblueDark}}
-\renewcommand{\cftaftertoctitle}{\vspace{1.5\baselineskip}}
-\renewcommand{\cftsecfont}{\bfseries\sffamily\color{AUblueDark}}
-\renewcommand{\cftsecpagefont}{\bfseries\sffamily\color{AUblueDark}}
-\renewcommand{\cftsubsecfont}{\sffamily\color{AUblue}}
-\renewcommand{\cftsubsecpagefont}{\sffamily\color{AUblue}}
-\renewcommand{\cftsubsubsecfont}{\sffamily\color{AUblueDark}}
-\renewcommand{\cftsubsubsecpagefont}{\sffamily\color{AUblueDark}}
+
+\renewcommand{\cfttoctitlefont}
+  {\Huge\bfseries\sffamily\color{AUblueDark}}
 \renewcommand{\cftsecdotsep}{\cftdotsep}
 
 \newcommand{\NoahInstallTitleCasing}{%
   \let\noah@original@section\section
   \let\noah@original@subsection\subsection
   \let\noah@original@subsubsection\subsubsection
+
   \RenewDocumentCommand{\section}{s o m}{%
     \IfBooleanTF{##1}
       {\noah@original@section*{\NoahTitleCase{##3}}}
       {\IfNoValueTF{##2}
         {\noah@original@section{\NoahTitleCase{##3}}}
-        {\noah@original@section[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+        {\noah@original@section
+          [\NoahTitleCase{##2}]
+          {\NoahTitleCase{##3}}}}%
   }%
+
   \RenewDocumentCommand{\subsection}{s o m}{%
     \IfBooleanTF{##1}
       {\noah@original@subsection*{\NoahTitleCase{##3}}}
       {\IfNoValueTF{##2}
         {\noah@original@subsection{\NoahTitleCase{##3}}}
-        {\noah@original@subsection[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+        {\noah@original@subsection
+          [\NoahTitleCase{##2}]
+          {\NoahTitleCase{##3}}}}%
   }%
+
   \RenewDocumentCommand{\subsubsection}{s o m}{%
     \IfBooleanTF{##1}
       {\noah@original@subsubsection*{\NoahTitleCase{##3}}}
       {\IfNoValueTF{##2}
         {\noah@original@subsubsection{\NoahTitleCase{##3}}}
-        {\noah@original@subsubsection[\NoahTitleCase{##2}]{\NoahTitleCase{##3}}}}%
+        {\noah@original@subsubsection
+          [\NoahTitleCase{##2}]
+          {\NoahTitleCase{##3}}}}%
   }%
 }
 
@@ -599,43 +628,38 @@
 \RequirePackage{csquotes}
 
 \RequirePackage[
-  backend=biber,
-  style=authoryear,
-  sorting=nyt
+  backend=biber
 ]{biblatex}
 
-% Make the complete citation label + year one hyperlink.
-% This mirrors biblatex's authoryear cite macro, but moves the
-% hyperlink around the complete citation instead of only the year.
-\renewbibmacro*{cite}{%
-  \printtext[bibhyperref]{%
-    \iffieldundef{shorthand}
-      {%
-        \ifboolexpr{
-          test {\ifnameundef{labelname}}
-          or
-          test {\iffieldundef{labelyear}}
-        }
-          {%
-            \iffieldundef{label}
-              {\printfield[citetitle]{labeltitle}}
-              {\printfield{label}}%
-            \setunit{\printdelim{nonameyeardelim}}%
+\newcommand{\NoahInstallAuthorYearCitationLinks}{%
+  \renewbibmacro*{cite}{%
+    \printtext[bibhyperref]{%
+      \iffieldundef{shorthand}
+        {%
+          \ifboolexpr{
+            test {\ifnameundef{labelname}}
+            or
+            test {\iffieldundef{labelyear}}
           }
-          {%
-            \printnames{labelname}%
-            \setunit{\printdelim{nameyeardelim}}%
-          }%
-        \iffieldundef{labelyear}
-          {}
-          {\printlabeldateextra}%
-      }
-      {\printfield{shorthand}}%
+            {%
+              \iffieldundef{label}
+                {\printfield[citetitle]{labeltitle}}
+                {\printfield{label}}%
+              \setunit{\printdelim{nonameyeardelim}}%
+            }
+            {%
+              \printnames{labelname}%
+              \setunit{\printdelim{nameyeardelim}}%
+            }%
+          \iffieldundef{labelyear}
+            {}
+            {\printlabeldateextra}%
+        }
+        {\printfield{shorthand}}%
+    }%
   }%
 }
 
-% Better BibLaTeX exports Zotero statutes and bills as @legislation,
-% for which the standard authoryear bibliography style has no driver.
 \DeclareBibliographyDriver{legislation}{%
   \usebibmacro{bibindex}%
   \usebibmacro{begentry}%
@@ -674,9 +698,6 @@
   \Crefname{equation}{Ligning}{Ligninger}
 \fi
 
-% Shared lecture reference type used by both notes and assignments.
-% The visible lecture identifier is set manually by \lecture while the counter
-% itself provides unique hyperlink anchors.
 \newcounter{lecture}
 \ifnoah@danish
   \crefname{lecture}{forelæsning}{forelæsninger}
@@ -685,6 +706,29 @@
   \crefname{lecture}{lecture}{lectures}
   \Crefname{lecture}{Lecture}{Lectures}
 \fi
+
+\newcommand*\l@lecture[2]{%
+  \ifnum\c@tocdepth>\z@
+    \addpenalty\@secpenalty
+    \addvspace{0.85\baselineskip plus 1pt}%
+    \begingroup
+      \leftskip\z@
+      \rightskip\@tocrmarg
+      \parfillskip-\rightskip
+      \parindent\z@
+      \interlinepenalty\@M
+      \leavevmode
+      {\large\sffamily\color{black}#1}%
+      \nobreak\hfill\nobreak
+      \hb@xt@\@pnumwidth{%
+        \hss\normalfont\normalsize\sffamily\color{black}#2%
+      }%
+      \par
+    \endgroup
+  \fi
+}
+
+\def\toclevel@lecture{1}
 
 \newcommand{\noah@namedref}[2]{%
   \begingroup
@@ -696,6 +740,7 @@
   %
   \ifboolexpr{%
     test {\ifdefstring{\noah@reftype}{part}}
+    or test {\ifdefstring{\noah@reftype}{appendix}}
     or test {\ifdefstring{\noah@reftype}{chapter}}
     or test {\ifdefstring{\noah@reftype}{section}}
     or test {\ifdefstring{\noah@reftype}{subsection}}
@@ -717,26 +762,280 @@
   \endgroup
 }
 
-\newcommand{\mref}[1]{\noah@namedref{\cref*{#1}}{#1}}
-\newcommand{\Mref}[1]{\noah@namedref{\Cref*{#1}}{#1}}
-
 \ExplSyntaxOn
+
+% ------------------------------------------------------------
+% Smart references
+%
+% Equation references:
+%   \mref{eq:a}              -> (1)
+%   \Mref{eq:a}              -> Equation (1)
+%   \mref{eq:a,eq:b}         -> (1) and (2)
+%   \Mref{eq:a,eq:b}         -> Equations (1) and (2)
+%   \mref{eq:a,eq:b,eq:c}    -> (1), (2), and (3)
+%   \Mref{eq:a,eq:b,eq:c}    -> Equations (1), (2), and (3)
+%
+% For a single non-equation reference, the existing named-reference
+% behaviour is retained, including titles for sections, chapters, etc.
+% Multiple or mixed non-equation references fall back to cleveref.
+% ------------------------------------------------------------
+
+\seq_new:N  \l_noah_ref_seq
+\bool_new:N \l_noah_all_equations_bool
+
+
+% ------------------------------------------------------------
+% Determine whether every supplied label is an equation.
+% ------------------------------------------------------------
+
+\cs_new_protected:Npn \noah_refs_are_equations:nTF #1#2#3
+  {
+    \bool_set_true:N \l_noah_all_equations_bool
+
+    \clist_map_inline:nn {#1}
+      {
+        \ifcsname r@##1@cref\endcsname
+          \cref@gettype{##1}{\noah@reftype}
+          \ifdefstring{\noah@reftype}{equation}
+            { }
+            { \bool_set_false:N \l_noah_all_equations_bool }
+        \else
+          \bool_set_false:N \l_noah_all_equations_bool
+        \fi
+      }
+
+    \bool_if:NTF \l_noah_all_equations_bool
+      {#2}
+      {#3}
+  }
+
+
+% ------------------------------------------------------------
+% Equation-reference building blocks
+% ------------------------------------------------------------
+
+% A single parenthesised equation number with its own hyperlink.
+%
+% Do not use \eqref* here: amsmath does not define a starred
+% version of \eqref. Instead, suppress the hyperlink with \ref*
+% and provide the parentheses ourselves.
+\cs_new:Npn \noah_eqref:n #1
+  {
+    \hyperref[#1]{(\ref*{#1})}
+  }
+
+
+% Same as above, but include the sentence-initial equation name
+% inside the hyperlink.
+\cs_new:Npn \noah_first_Meqref:nn #1#2
+  {
+    \hyperref[#2]{#1~(\ref*{#2})}
+  }
+
+
+% ------------------------------------------------------------
+% Running-text equation lists
+%
+%   (1)
+%   (1) and (2)
+%   (1), (2), and (3)
+% ------------------------------------------------------------
+
+\cs_new_protected:Npn \noah_eqref_list:n #1
+  {
+    \seq_set_from_clist:Nn \l_noah_ref_seq {#1}
+    \int_set:Nn \l_tmpa_int { \seq_count:N \l_noah_ref_seq }
+
+    \int_case:nnF { \l_tmpa_int }
+      {
+        {1}
+          {
+            \exp_args:Ne \noah_eqref:n
+              { \seq_item:Nn \l_noah_ref_seq {1} }
+          }
+
+        {2}
+          {
+            \exp_args:Ne \noah_eqref:n
+              { \seq_item:Nn \l_noah_ref_seq {1} }
+            \c_space_tl and \c_space_tl
+            \exp_args:Ne \noah_eqref:n
+              { \seq_item:Nn \l_noah_ref_seq {2} }
+          }
+      }
+      {
+        \int_step_inline:nn { \l_tmpa_int }
+          {
+            \int_compare:nNnTF {##1} = {1}
+              {
+                \exp_args:Ne \noah_eqref:n
+                  { \seq_item:Nn \l_noah_ref_seq {##1} }
+                ,
+                \c_space_tl
+              }
+              {
+                \int_compare:nNnTF {##1} < { \l_tmpa_int }
+                  {
+                    \exp_args:Ne \noah_eqref:n
+                      { \seq_item:Nn \l_noah_ref_seq {##1} }
+                    ,
+                    \c_space_tl
+                  }
+                  {
+                    and \c_space_tl
+                    \exp_args:Ne \noah_eqref:n
+                      { \seq_item:Nn \l_noah_ref_seq {##1} }
+                  }
+              }
+          }
+      }
+  }
+
+
+% ------------------------------------------------------------
+% Sentence-initial equation lists
+%
+%   Equation (1)
+%   Equations (1) and (2)
+%   Equations (1), (2), and (3)
+%
+% The name and first equation number form one hyperlink, matching
+% cleveref's nameinlink behaviour. Subsequent equation numbers have
+% their own links.
+% ------------------------------------------------------------
+
+\cs_new_protected:Npn \noah_Meqref:n #1
+  {
+    \seq_set_from_clist:Nn \l_noah_ref_seq {#1}
+    \int_set:Nn \l_tmpa_int { \seq_count:N \l_noah_ref_seq }
+
+    \ifnoah@danish
+      \int_compare:nNnTF { \l_tmpa_int } = {1}
+        { \tl_set:Nn \l_tmpa_tl {Ligning} }
+        { \tl_set:Nn \l_tmpa_tl {Ligninger} }
+    \else
+      \int_compare:nNnTF { \l_tmpa_int } = {1}
+        { \tl_set:Nn \l_tmpa_tl {Equation} }
+        { \tl_set:Nn \l_tmpa_tl {Equations} }
+    \fi
+
+    % First reference: include "Equation"/"Equations" in the link.
+    \exp_args:NV
+      \noah_Meqref_first_aux:n
+      \l_tmpa_tl
+  }
+
+
+\cs_new_protected:Npn \noah_Meqref_first_aux:n #1
+  {
+    \int_set:Nn \l_tmpa_int { \seq_count:N \l_noah_ref_seq }
+
+    \exp_args:Nne \noah_first_Meqref:nn
+      {#1}
+      { \seq_item:Nn \l_noah_ref_seq {1} }
+
+    \int_compare:nNnT { \l_tmpa_int } > {1}
+      {
+        \int_compare:nNnTF { \l_tmpa_int } = {2}
+          {
+            \c_space_tl and \c_space_tl
+            \exp_args:Ne \noah_eqref:n
+              { \seq_item:Nn \l_noah_ref_seq {2} }
+          }
+          {
+            ,
+            \c_space_tl
+
+            \int_step_inline:nnn {2} { \l_tmpa_int }
+              {
+                \int_compare:nNnTF {##1} < { \l_tmpa_int }
+                  {
+                    \exp_args:Ne \noah_eqref:n
+                      { \seq_item:Nn \l_noah_ref_seq {##1} }
+                    ,
+                    \c_space_tl
+                  }
+                  {
+                    and \c_space_tl
+                    \exp_args:Ne \noah_eqref:n
+                      { \seq_item:Nn \l_noah_ref_seq {##1} }
+                  }
+              }
+          }
+      }
+  }
+
+
+% ------------------------------------------------------------
+% Non-equation references
+% ------------------------------------------------------------
+
+\cs_new_protected:Npn \noah_mref_nonequation:n #1
+  {
+    \seq_set_from_clist:Nn \l_noah_ref_seq {#1}
+
+    \int_compare:nNnTF
+      { \seq_count:N \l_noah_ref_seq } = {1}
+      {
+        \noah@namedref{\cref*{#1}}{#1}
+      }
+      {
+        \cref{#1}
+      }
+  }
+
+
+\cs_new_protected:Npn \noah_Mref_nonequation:n #1
+  {
+    \seq_set_from_clist:Nn \l_noah_ref_seq {#1}
+
+    \int_compare:nNnTF
+      { \seq_count:N \l_noah_ref_seq } = {1}
+      {
+        \noah@namedref{\Cref*{#1}}{#1}
+      }
+      {
+        \Cref{#1}
+      }
+  }
+
+
+% ------------------------------------------------------------
+% Public commands
+% ------------------------------------------------------------
+
+\NewDocumentCommand{\mref}{m}
+  {
+    \noah_refs_are_equations:nTF {#1}
+      { \noah_eqref_list:n {#1} }
+      { \noah_mref_nonequation:n {#1} }
+  }
+
+
+\NewDocumentCommand{\Mref}{m}
+  {
+    \noah_refs_are_equations:nTF {#1}
+      { \noah_Meqref:n {#1} }
+      { \noah_Mref_nonequation:n {#1} }
+  }
+
 \AtBeginDocument{%
   \NoahStoreTitleCase{\noah@pdftitleplain}{\@title}%
   \tl_set:Nx \l_tmpa_tl {\NoahAuthorsFull}
   \tl_set:Nx \l_tmpb_tl {\tl_use:N\g_noah_pdf_subject_tl}
-  \tl_if_blank:VTF \l_tmpb_tl
-    {
-      \ifnoah@assignment
-        \tl_set:Nx \l_tmpb_tl {\NoahLabelAssignmentFor\c_space_tl\NoahCourseCompact}
-      \else
-        \tl_set:Nx \l_tmpb_tl {\NoahLabelLectureNotesFor\c_space_tl\NoahCourseCompact}
-      \fi
-    }{}
+
   \ifnoah@anonymous
-    \hypersetup{pdftitle={\noah@pdftitleplain},pdfauthor={},pdfsubject={\l_tmpb_tl}}
+    \hypersetup{
+      pdftitle={\noah@pdftitleplain},
+      pdfauthor={},
+      pdfsubject={\l_tmpb_tl}
+    }%
   \else
-    \hypersetup{pdftitle={\noah@pdftitleplain},pdfauthor={\l_tmpa_tl},pdfsubject={\l_tmpb_tl}}
+    \hypersetup{
+      pdftitle={\noah@pdftitleplain},
+      pdfauthor={\l_tmpa_tl},
+      pdfsubject={\l_tmpb_tl}
+    }%
   \fi
 }
 \ExplSyntaxOff
