@@ -232,7 +232,7 @@
 
 % Align contents and list titles with ordinary chapter headings.
 \setlength{\cftbeforetoctitleskip}{3mm}
-\setlength{\cftaftertoctitleskip}{-3mm}
+\setlength{\cftaftertoctitleskip}{\baselineskip}
 
 \setlength{\cftbeforeloftitleskip}{3mm}
 \setlength{\cftafterloftitleskip}{1.3\baselineskip}
