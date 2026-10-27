@@ -236,3 +236,7 @@ These classes are intentionally opinionated and primarily developed for my perso
 ## License
 
 This project is licensed under the MIT License. See [`LICENSE`](LICENSE).
+
+## Front-page CLI
+
+Generate a standalone R&D front page from terminal arguments. See [installation and usage](docs/frontpage.md).

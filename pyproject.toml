@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "noah-frontpage"
+version = "0.1.0"
+description = "Generate an R&D-style LaTeX front page from terminal arguments"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+readme = "docs/frontpage.md"
+
+[project.scripts]
+frontpage = "noah_frontpage.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+noah_frontpage = ["assets/*.cls", "assets/*.sty", "assets/*.txt", "assets/figures/*.pdf"]

@@ -32,3 +32,10 @@ examples/**/references.bib
 
 # Local personal configuration
 noah-private.cfg
+
+# Python CLI
+__pycache__/
+*.egg-info/
+build/
+dist/
+.venv/

@@ -1,0 +1,32 @@
+name: Front-page CLI
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: |
+          pip install .
+          python -m unittest discover -s tests
+          pip wheel --no-deps . -w dist
+          frontpage --title 'R&D: Foams at 50%' --member 'Noah Hansen' 'AU761714' --member 'Søren Æ' '' --course 'R&D Project' --course-code MECH-PRJ --supervisor 'Supervisor Name' --semester 'Autumn 2026' --date '18 December 2026' --tex-only -o smoke/frontpage.pdf
+      - uses: xu-cheng/latex-action@v4
+        with:
+          root_file: smoke/frontpage.tex
+          work_in_root_file_dir: true
+          texlive_version: 2025
+          latexmk_use_lualatex: true
+        env:
+          TEXINPUTS: '.:./frontpage-assets-f401d15edbae:'
+      - run: |
+          sudo apt-get update && sudo apt-get install -y poppler-utils
+          pdfinfo smoke/frontpage.pdf | grep -Eq '^Pages: +1$'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontpage-smoke
+          path: smoke/frontpage.pdf

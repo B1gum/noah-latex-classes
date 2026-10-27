@@ -1,0 +1,5 @@
+Unmodified rdproject.cls, noah-common.sty, and figures/AU.pdf from:
+https://github.com/B1gum/noah-latex-classes
+Commit: 39ab48c3a36a0b9e04cb772587ef43ae816a31a0
+The repository LICENSE applies to the class and style files.
+The AU logo remains an Aarhus University mark; inclusion does not imply endorsement.
